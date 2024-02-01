@@ -2,10 +2,15 @@
 Firmware for Cardputer
 
 ## Name and Background
+Forked project, same intentions B)
 NEMO started a personal project to help me learn more about ESP32 development with the Arduino IDE. I decided to replicate a few common, trending pranks that were getting a lot of attention in the tech community, as a challenge to myself, and to also better understand these attacks.  
 NEMO is named after the small, clever and stubborn fish in Finding Nemo. This project stands in contrast to another high-tech gadget that's associated with certain sea-dwelling creatures. I did want to prove that there are a lot of things you can do with a small development kit and some curiosity. I have no delusions of superseding the capabilities of any similar device with this project. It's just for fun, and my own education.  
 
-![M5-Nemo on M5StickC+ and M5Cardputer](https://github.com/n0xa/m5stick-nemo/blob/main/M5-Nemo.jpg)
+Hello, my name is Bruce.
+
+![M5Cardputer](https://github.com/pr3y/m5-bruce/blob/main/pic1.png)
+
+![M5Cardputer Main Screen](https://github.com/pr3y/m5-bruce/blob/main/pic2.png)
 ## Features
 * [TV B-Gone](http://www.righto.com/2010/11/improved-arduino-tv-b-gone.html) port (thanks to MrArm's [HAKRWATCH](https://github.com/MrARM/hakrwatch)) to shut off many infrared-controlled TVs, projectors and other devices
 * [AppleJuice](https://github.com/ECTO-1A/AppleJuice) iOS Bluetooth device pairing spam
@@ -37,8 +42,8 @@ There are three main controls:
   * Select: Tap the OK/Enter key or Right-Arrow/? key  
 
 ## EVIL Portal
-In EVIL Portal mode, NEMO activates an open WiFi Hotspot named "Nemo Free WiFi" (configurable in portal.h) with DNS, DHCP and Web servers activated. 
-* NEMO Portal serves a fake login page that claims to provide internet access if you log in.
+In EVIL Portal mode, BRUCE activates an open WiFi chosen by you (with the input keyboard) with DNS, DHCP and Web servers activated. 
+* EVIL Portal serves a fake login page that claims to provide internet access if you log in.
 * This is a social engineering attack, and will log the username and passwords entered on the page. 
 * You can view these credentials by connecting to the portal from your own device and browsing to http://172.0.0.1/creds
 * If your device has an SD Card reader with a FAT filesystem formatted card inserted, the usernames and passwords will be logged to nemo-portal-creds.txt on the SD Card for you to peruse later. 
@@ -103,3 +108,12 @@ Things I'd like help on:
 Things I probably won't merge in:
 * Bulk wifi deauthentication spamming
 * Bluetooth spam that potentially disrupts health and fitness trackers, smart watches, etc.
+
+## References
+https://github.com/spacehuhn/ArduinoPcap
+
+https://github.com/n0xa/m5stick-nemo
+
+https://github.com/m5stack/M5Cardputer
+
+https://github.com/caioluders/DPWO
