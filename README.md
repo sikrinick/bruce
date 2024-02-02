@@ -51,11 +51,11 @@ In EVIL Portal mode, BRUCE reads the keyboard input for the SSID and activates a
 * NEMO Portal is only for use on professional engagements with a valid scope of work, educational or demonstration purposes. Storage, sale, or use of personal information without consent is against the law. 🤓
 
 ## Install from M5Burner
-This is the absolute easiest way to get NEMO
-* [M5Stick C Plus Quick Start](https://docs.m5stack.com/en/quick_start/m5stickc_plus/uiflow) has links to the M5Burner app for Linux, MacOS and Windows. This is the official tool to install UIFlow and other official firmware. I provide up-to-date binaries for NEMO there.
+This is the absolute easiest way to get BRUCE
+* [M5Stick C Plus Quick Start](https://docs.m5stack.com/en/quick_start/m5stickc_plus/uiflow) has links to the M5Burner app for Linux, MacOS and Windows. This is the official tool to install UIFlow and other official firmware. I provide up-to-date binaries for BRUCE there.
 * Launch M5Burner
-* Select "StickC" from the menu on the left (or StampS3 for Cardputer)
-* Use the search at the top of the app to look for "NEMO". My official builds will be uploaded by "4x0nn" and have photos.
+* Select "STAMPS3" from the menu on the left (or StampS3 for Cardputer)
+* Use the search at the top of the app to look for "BRUCE". My official builds will be uploaded by "owner" and have photos.
 * Click Download
 * Click Burn
 
