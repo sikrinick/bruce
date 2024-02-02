@@ -15,14 +15,14 @@ Hello, my name is Bruce.
 * [TV B-Gone](http://www.righto.com/2010/11/improved-arduino-tv-b-gone.html) port (thanks to MrArm's [HAKRWATCH](https://github.com/MrARM/hakrwatch)) to shut off many infrared-controlled TVs, projectors and other devices
 * [AppleJuice](https://github.com/ECTO-1A/AppleJuice) iOS Bluetooth device pairing spam
 * Bluetooth device notification spamming for SwiftPair (Windows) and Android
-* WiFi NEMO Portal - A captive portal that tries to social engineer email credentials - saves usernames and passwords to SD Card (if inserted into a supported reader)
+* WiFi EVIL Portal - A captive portal that tries to social engineer email credentials - saves usernames and passwords to SD Card (if inserted into a supported reader)
 * WiFi SSID Scanner - Display 2.4 GHz SSIDs nearby and get information about them
 * User-adjustable 24 Hour digital clock backed by the M5 Stick RTC so it holds relatively stable time even in deep sleep and low battery mode
 * EEPROM-backed Settings for rotation, brightness and, automatic dimming
 * Battery level and credits in settings menu
 * SSH Client
 * DPWO-ESP32
-* Raw Sniffer - saves to SD
+* Raw Sniffer - saves PCAP to SD
 
 ## User Interface
 There are three main controls:
@@ -42,7 +42,7 @@ There are three main controls:
   * Select: Tap the OK/Enter key or Right-Arrow/? key  
 
 ## EVIL Portal
-In EVIL Portal mode, BRUCE activates an open WiFi chosen by you (with the input keyboard) with DNS, DHCP and Web servers activated. 
+In EVIL Portal mode, BRUCE reads the keyboard input for the SSID and activates a open WiFi, with DNS, DHCP and Web servers activated. 
 * EVIL Portal serves a fake login page that claims to provide internet access if you log in.
 * This is a social engineering attack, and will log the username and passwords entered on the page. 
 * You can view these credentials by connecting to the portal from your own device and browsing to http://172.0.0.1/creds
