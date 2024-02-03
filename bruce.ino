@@ -130,6 +130,8 @@ String buildver="0.3";
   #define SD_MISO_PIN 39
   #define SD_MOSI_PIN 14
   #define SD_CS_PIN 12
+  #define VBAT_PIN 10
+
 #endif
 
 
@@ -483,9 +485,9 @@ void dmenu_loop() {
 /// SETTINGS MENU ///
 MENU smenu[] = {
   { "Back", 1},
-#if defined(AXP)
+
   { "Battery Info", 6},
-#endif
+
   { "Brightness", 4},
 #if defined(RTC)
   { "Set Clock", 3},
@@ -573,39 +575,42 @@ int rotation = 1;
   }
 #endif //ROTATION
 
-#if defined(AXP)
   /// BATTERY INFO ///
   int oldbattery=0;
-  void battery_drawmenu(int battery, int b, int c) {
+  void battery_drawmenu(int battery) {
     DISP.setTextSize(SMALL_TEXT);
     DISP.fillScreen(BGCOLOR);
     DISP.setCursor(0, 8, 1);
-    DISP.print("Battery: ");
+    DISP.print("Battery level: ");
     DISP.print(battery);
     DISP.println("%");
-    DISP.print("DeltaB: ");
-    DISP.println(b);
-    DISP.print("DeltaC: ");
-    DISP.println(c);
-    DISP.println("");
-    DISP.println("Press any button to exit");
   }
-  void battery_setup() {
+
+  void battery_setup() { // 
     rstOverride = false;
-    float c = M5.Axp.GetVapsData() * 1.4 / 1000;
-    float b = M5.Axp.GetVbatData() * 1.1 / 1000;
-    int battery = ((b - 3.0) / 1.2) * 100;
-    battery_drawmenu(battery, b, c);
+    pinMode(VBAT_PIN, INPUT);
+    int battery = ((((analogRead(VBAT_PIN)) - 1842) * 100) / 738); // 
+    int bat_ = analogRead(VBAT_PIN);
+    Serial.println("Battery level: ");
+    
+    Serial.println(battery);
+    battery_drawmenu(battery);
     delay(500); // Prevent switching after menu loads up
+    /*
+      Used minimum 3,0V and maximum 4,2V for battery. So it may show wrong values. Needs testing.
+      It only shows decent values when disconnected from charger, due to HW limitations.
+      Equation: Bat% = ((Vadc - 1842) / (2580 - 1842)) * 100. Where: 4,2V = 2580, 3,0V = 1842.
+    */
   }
 
   void battery_loop() {
     delay(300);
-    float c = M5.Axp.GetVapsData() * 1.4 / 1000;
-    float b = M5.Axp.GetVbatData() * 1.1 / 1000;
-    int battery = ((b - 3.0) / 1.2) * 100;
+    int battery = ((((analogRead(VBAT_PIN)) - 1842) * 100) / 738);
     if (battery != oldbattery){
-      battery_drawmenu(battery, b, c);
+      Serial.println("Battery level:");
+      Serial.println(battery);
+      Serial.printf("Raw: %d\n", analogRead(VBAT_PIN));
+      battery_drawmenu(battery);
     }
     if (check_select_press()) {
       rstOverride = false;
@@ -614,7 +619,6 @@ int rotation = 1;
     }
     oldbattery = battery;
   }
-#endif // AXP
 
 /// TV-B-GONE ///
 void tvbgone_setup() {
@@ -1894,11 +1898,11 @@ void loop() {
       case 5:
         tvbgone_setup();
         break;
-#if defined(AXP)
+
       case 6:
         battery_setup();
         break;
-#endif
+
 #if defined(ROTATION)
       case 7:
         rmenu_setup();
@@ -1990,11 +1994,11 @@ void loop() {
     case 5:
       tvbgone_loop();
       break;
-#if defined(AXP)
+
     case 6:
       battery_loop();
       break;
-#endif
+
 #if defined(ROTATION)
     case 7:
       rmenu_loop();
