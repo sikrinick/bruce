@@ -103,7 +103,12 @@ Contributions are welcome. Please look at the GitHub Issues for ideas to help en
 
 Things I'd like help on:
 * A new "Region" of TV-B-Gone that's full of additional IR codes that can turn RGB LED strips, air conditioners, fans, sound bars and the like on and off
-* Help refactoring how menus work. The way it was built was fine when it was one main menu with a few options. Now, adding a new sub-menu involves a lot of duplicated code.   
+* Help refactoring how menus work. The way it was built was fine when it was one main menu with a few options. Now, adding a new sub-menu involves a lot of duplicated code.
+* TELNET client
+* SMB client
+* Simple network scan
+* BadUSB
+* Select EVIL portal template from SD card
 
 Things I probably won't merge in:
 * Bulk wifi deauthentication spamming
