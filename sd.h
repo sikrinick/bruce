@@ -25,7 +25,40 @@ bool sdcardMounted = false;
       xSemaphoreGive(sdcardSemaphore);
     }
   }
+
+ /*
+ void listHtmlFiles() {
+  File root = SD.open("/");
+  
+  if (!root) {
+    Serial.println("Failed to open SD card");
+    return;
+  }
+
+  while (true) {
+    File file = root.openNextFile();
+    if (!file) {
+      break;
+    }
+
+    if (file.isDirectory()) {
+      // Skip directories
+    } else {
+      String filename = file.name();
+      if (filename.endsWith(".html")) {
+        Serial.print("HTML file: ");
+        Serial.println(filename);
+      }
+    }
+
+    file.close();
+  }
+
+  root.close();
+}
+*/
 #endif
+
 
 bool setupSdCard() {
 #if defined(SDCARD)
@@ -47,3 +80,4 @@ bool setupSdCard() {
   return false;
 #endif
 }
+

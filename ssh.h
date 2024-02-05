@@ -195,7 +195,7 @@ void ssh_setup(){
     auto cfg = M5.config();
     M5Cardputer.begin(cfg, true);
     DISP.setRotation(1);
-    DISP.setTextSize(TINY_TEXT);  // Set text size
+    DISP.setTextSize(SMALL_TEXT);  // Set text size
     DISP.clear();
     DISP.print("WIFI SSID:\n");
     waitForInput(ssid);
@@ -230,6 +230,7 @@ void ssh_setup(){
     waitForInput(ssh_user);
     DISP.print("\nSSH Password: ");
     waitForInput(ssh_password);
+    
 
     my_ssh_session = ssh_new();
 
@@ -300,4 +301,126 @@ void ssh_setup(){
     delay(2000);
     DISP.clear();
     DISP.setTextColor(WHITE, BGCOLOR);
+    DISP.setTextSize(TINY_TEXT);  // Set text size
 }
+
+
+
+
+
+/*
+#include <string.h>
+#include <esp_wifi.h>
+#include <esp_event.h>
+#include <esp_log.h>
+#include <esp_system.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <lwip/sockets.h>
+
+#define TAG "TELNET_CLIENT"
+
+String telnet_server_string = ""; // Replace with your TELNET server's IP address
+char telnet_server_ip[12];
+static const int telnet_server_port = 23; // TELNET protocol default port
+
+static int sock;
+
+char* stringTochar(String s)
+{
+    if (s.length() == 0) {
+        return nullptr; // or handle the case where the string is empty
+    }
+
+    static char arr[12]; // Make sure it's large enough to hold the IP address
+    s.toCharArray(arr, sizeof(arr));
+    return arr;
+}
+
+static void telnet_setup() {
+   DISP.clear();
+    DISP.setCursor(0, 0);
+    Serial.begin(115200);  // Initialize serial communication for debugging
+    Serial.println("Starting Setup");
+
+    auto cfg = M5.config();
+    M5Cardputer.begin(cfg, true);
+    DISP.setRotation(1);
+    DISP.setTextSize(SMALL_TEXT);  // Set text size
+    DISP.clear();
+    DISP.print("WIFI SSID:\n");
+    waitForInput(ssid);
+    DISP.print("WIFI Password: \n");
+    waitForInput(password);
+
+    // Connect to WiFi
+    WiFi.begin(ssid, password.c_str());
+    delay(2000);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+        DISP.setTextColor(RED, BGCOLOR);
+        DISP.print("FAILED TO CONNECT!");
+        DISP.setTextColor(FGCOLOR, BGCOLOR);
+        return;
+    }
+    DISP.setTextColor(GREEN, BGCOLOR);
+    DISP.println("WiFi Connected");
+    delay(2000);
+    DISP.setTextColor(FGCOLOR, BGCOLOR);
+    // Initialize the cursor Y position
+    
+    DISP.clear();
+    cursorY = DISP.getCursorY();
+
+    DISP.setCursor(0, 0);
+    DISP.print("TELNET Host: \n");
+    waitForInput(telnet_server_string);
+    telnet_server_ip = stringTochar(telnet_server_string);
+    
+}
+
+static void telnet_loop() {
+    struct sockaddr_in dest_addr;
+    dest_addr.sin_addr.s_addr = inet_addr(telnet_server_ip);
+    dest_addr.sin_family = AF_INET;
+    dest_addr.sin_port = htons(telnet_server_port);
+
+    sock = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+    if (sock < 0) {
+        ESP_LOGE(TAG, "Unable to create socket");
+        return;
+    }
+
+    if (connect(sock, (struct sockaddr*)&dest_addr, sizeof(dest_addr)) != 0) {
+        ESP_LOGE(TAG, "Socket connection failed");
+        close(sock);
+        return;
+    }
+
+    ESP_LOGI(TAG, "Connected to TELNET server");
+
+    while (1) {
+        // Your TELNET client logic goes here
+
+        // For example, sending a command to the server
+        const char *command = "Hello TELNET server!\r\n";
+        send(sock, command, strlen(command), 0);
+
+        // You can also receive data from the server
+        char buffer[128];
+        int len = recv(sock, buffer, sizeof(buffer) - 1, 0);
+        if (len > 0) {
+            buffer[len] = '\0';
+            ESP_LOGI(TAG, "Received from server: %s", buffer);
+        }
+
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+}
+
+*/
+
+
+
+

@@ -21,7 +21,7 @@ github.com/caioluders/DPWO
 #define CARDPUTER
 
 
-String buildver="0.3";
+String buildver="0.4";
 #define BGCOLOR BLACK
 #define FGCOLOR PURPLE
 
@@ -172,7 +172,8 @@ String buildver="0.3";
 // 20 - SSH
 // 21 - Microphone
 // 22 - DPWO-ESP32
-// 23 - WifiDuck(TODO)
+// 23 - BadUSB(TODO)
+// 24 - TELNET client(TODO)
 
 #include <IRremoteESP8266.h>
 #include <IRsend.h>
@@ -182,9 +183,11 @@ String buildver="0.3";
 #include "WORLD_IR_CODES.h"
 #include "sd.h"
 #include "portal.h"
+//#include "telnet.h"
 #include "dpwo.h"
 #include "sniffer.h"
 #include "ssh.h"
+#include "usb.h"
 #include <BLEUtils.h>
 #include <BLEServer.h>
 //#include "WifiMgmtHdr.h"
@@ -344,14 +347,11 @@ bool check_select_press(){
 
 /// MAIN MENU ///
 MENU mmenu[] = {
-#if defined(RTC)
-  { "Clock", 0},
-#endif
   { "IR", 13}, // We jump to the region menu first
   { "Bluetooth", 16},
   { "WiFi", 12},
   { "QR Codes", 18},
-  { "SSH", 20},
+  { "BadUSB", 23},
   { "Microphone", 21},
   { "Settings", 2},
 };
@@ -1362,7 +1362,8 @@ MENU wsmenu[] = {
   { "DPWO-ESP32", 2},
   { "Raw sniffer", 3},
   { "EVIL portal", 4},
-  { "WifiDuck(TODO)", 6},
+  { "SSH", 6},
+  { "TELNET(TODO)", 7},
 };
 int wsmenu_size = sizeof(wsmenu) / sizeof (MENU);
 
@@ -1407,7 +1408,10 @@ void wsmenu_loop() {
         current_proc = 1;
         break;
       case 6:
-        current_proc = 23;
+        current_proc = 20;
+        break;
+      case 7:
+        current_proc = 24;
         break;
     }
   }
@@ -1546,7 +1550,7 @@ void bootScreen(){
   DISP.println("      \\^^^^  ==   \\_/   |");
   DISP.println("       `\\_   ===    \\.  |");
   DISP.println("       / /\\_   \\ /      |");
-  DISP.println("       |/   \\_  \\|      /     v0.3");
+  DISP.println("       |/   \\_  \\|      /     v0.4");
   DISP.println("              \\________/");
 
 
@@ -1624,7 +1628,71 @@ void qrmenu_loop() {
 }
 
 /// EVIL PORTAL
+/*
+    /// SD SELECT TEMPLATE IF HAS SD CARD///
+  MENU portal_select[] = {
 
+    { "index.html"}, // We jump to the region menu first
+    { "index2.html"},
+
+  };
+  int portal_size = sizeof(portal_select) / sizeof(MENU);
+
+
+/// SD SELECT TEMPLATE IF HAS SD CARD///
+MENU portal_select[50]; // Assuming a maximum of 50 HTML files, adjust as needed
+int portal_size = 0;
+
+void template_select_setup(){
+cursor = 0;
+  rstOverride = true;
+
+  File root = SD.open("/");
+  
+  while (true) {
+    File file = root.openNextFile();
+    if (!file) {
+      break;
+    }
+
+    if (file.isDirectory()) {
+    } else {
+      String filename = file.name();
+      if (filename.endsWith(".html")) {
+        Serial.print("HTML file: ");
+        Serial.println(filename);
+        
+        //TODO: append filename String to portal_select
+      }
+    }
+
+    file.close();
+  }
+
+  root.close();
+
+  // Draw the menu using the dynamically populated portal_select
+  drawmenu(portal_select, portal_size);
+}
+
+void template_select_loop(){
+//void mmenu_loop() {
+  if (check_next_press()) {
+    cursor++;
+    cursor = cursor % 2; // NUM_TEMPLATES
+    drawmenu(portal_select,portal_size);
+    delay(250);
+  }
+  if (check_select_press()) {
+    rstOverride = false;
+    isSwitching = true;
+    current_proc = portal_select[cursor].command;
+  }
+//}
+
+
+}
+*/
 String apSsidName = "";
 
 void portal_setup(){
@@ -1634,6 +1702,10 @@ void portal_setup(){
   DISP.setCursor(0, 0);
   DISP.println("Enter SSID name: ");
   waitForInput(apSsidName);
+  //template_select_setup();
+
+
+ // #endif
   setupWiFi(apSsidName);
   setupWebServer();
   portal_active = true;    
@@ -1641,6 +1713,16 @@ void portal_setup(){
   rstOverride = true;
   printHomeToScreen(apSsidName);
   delay(500); // Prevent switching after menu loads up
+    
+  /*
+#if defined(RTC)
+  { "Clock", 0},
+#endif
+*/
+
+
+
+
 }
 
 void portal_loop(){
@@ -1948,8 +2030,10 @@ void loop() {
         break;
       case 19:
         portal_setup();
+        //template_select_setup();
         break;
       case 20:
+
         ssh_setup();
         break;
       case 21:
@@ -1964,10 +2048,12 @@ void loop() {
         dpwoSetup();
         break;
       case 23:
-        DISP.fillScreen(BGCOLOR);
-        DISP.println("SOON!");
+
+        usb_setup();
         break;
-      
+      case 24:
+      //telnet_setup();
+      break; 
     }
   }
 
@@ -2040,8 +2126,10 @@ void loop() {
       break;
     case 19:
       portal_loop();
+      //template_select_loop();
       break;
     case 20:
+    //bad usb
       ssh_loop();
       break;
     case 21:
@@ -2049,11 +2137,16 @@ void loop() {
       break;
     case 22:
       dpwo_loop();
-      //no loop for dpwo :P
+      //no loop for dpwo :P (yet)
       break;
     case 23:
+      usb_loop();
+      break;
+    case 24:
+      //telnet_loop();
       break;
     
 
   }
 }
+
