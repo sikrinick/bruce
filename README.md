@@ -48,7 +48,7 @@ In EVIL Portal mode, BRUCE reads the keyboard input for the SSID and activates a
 * You can view these credentials by connecting to the portal from your own device and browsing to http://172.0.0.1/creds
 * If your device has an SD Card reader with a FAT filesystem formatted card inserted, the usernames and passwords will be logged to nemo-portal-creds.txt on the SD Card for you to peruse later. 
 * SD Card support is only enabled by default on the M5Stack Cardputer platform. It can be enabled on M5Stick devices but an SD Card reader must be built and attached to the front panel pin header.
-* NEMO Portal is only for use on professional engagements with a valid scope of work, educational or demonstration purposes. Storage, sale, or use of personal information without consent is against the law. 🤓
+* EVIL Portal is only for use on professional engagements with a valid scope of work, educational or demonstration purposes. Storage, sale, or use of personal information without consent is against the law. 🤓
 
 ## Install from M5Burner
 This is the absolute easiest way to get BRUCE
@@ -67,7 +67,7 @@ This is the absolute easiest way to get BRUCE
   * M5Nemo-VERSION.bin should be a version you downloaded from a GitHub Release -- preferably the latest available.
 
 ## Building from Source
-If you want to customize NEMO or contribute to the project, you should be familiar with building NEMO from source.
+If you want to customize BRUCE or contribute to the project, you should be familiar with building BRUCE from source.
 * Install Arduino IDE. I've used Arduino 1.8 on Linux and Windows, and Arduino 2.2 on Windows successfully.
 * Install the M5Stack boards for Arduino IDE: In File -> Preferences, paste this URL into the "Boards Manager URLs" text box. Use commas between URLs if there are already URLs present.  https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
 * If M5Stack -> M5Stick-C-Plus doesn't show up under Tools -> Boards, then use Tools -> Boards -> Boards Manager and search for M5Stack. This will install support for most of the M5Stack boards including the Stick C Plus.
@@ -107,7 +107,7 @@ Things I'd like help on:
 * TELNET client
 * SMB client
 * Simple network scan
-* BadUSB
+* ~~BadUSB~~
 * Select EVIL portal template from SD card
 
 Things I probably won't merge in:
