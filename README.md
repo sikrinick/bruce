@@ -11,6 +11,9 @@ Hello, my name is Bruce.
 ![M5Cardputer](https://github.com/pr3y/m5-bruce/blob/main/pic1.png)
 
 ![M5Cardputer Main Screen](https://github.com/pr3y/m5-bruce/blob/main/pic2.png)
+
+![M5Cardputer Wifi Attacks](https://github.com/pr3y/m5-bruce/blob/main/pic3.png)
+
 ## Features
 * [TV B-Gone](http://www.righto.com/2010/11/improved-arduino-tv-b-gone.html) port (thanks to MrArm's [HAKRWATCH](https://github.com/MrARM/hakrwatch)) to shut off many infrared-controlled TVs, projectors and other devices
 * [AppleJuice](https://github.com/ECTO-1A/AppleJuice) iOS Bluetooth device pairing spam
@@ -22,7 +25,9 @@ Hello, my name is Bruce.
 * Battery level and credits in settings menu
 * SSH Client
 * DPWO-ESP32
-* Raw Sniffer - saves PCAP to SD
+* Raw Sniffer - Saves PCAP to SD
+* BadUSB - Reads payload on SD card /badpayload.txt
+* Keyboard - Use as a keyboard USB input
 
 ## User Interface
 There are three main controls:
@@ -49,6 +54,10 @@ In EVIL Portal mode, BRUCE reads the keyboard input for the SSID and activates a
 * If your device has an SD Card reader with a FAT filesystem formatted card inserted, the usernames and passwords will be logged to nemo-portal-creds.txt on the SD Card for you to peruse later. 
 * SD Card support is only enabled by default on the M5Stack Cardputer platform. It can be enabled on M5Stick devices but an SD Card reader must be built and attached to the front panel pin header.
 * EVIL Portal is only for use on professional engagements with a valid scope of work, educational or demonstration purposes. Storage, sale, or use of personal information without consent is against the law. 🤓
+
+## BadUSB
+To choose a payload for the BadUSB on Cardputer instead of getting rickrolled, you need to create a file on the SD card root directory called "badpayload.txt".
+This will be the raw payload that will be sent when the Cardputer is connected via USB cable.
 
 ## Install from M5Burner
 This is the absolute easiest way to get BRUCE
