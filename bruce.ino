@@ -12,6 +12,7 @@ github.com/n0xa/m5stick-nemo
 github.com/spacehuhn/ArduinoPcap
 github.com/m5stack/M5Cardputer
 github.com/caioluders/DPWO
+
 */
 
 // -=-=-=-=-=-=- Recomend to build for CARDPUTER only :P-=-=-=-=-=-=-
@@ -21,7 +22,7 @@ github.com/caioluders/DPWO
 #define CARDPUTER
 
 
-String buildver="0.4";
+String buildver="0.5";
 #define BGCOLOR BLACK
 #define FGCOLOR PURPLE
 
@@ -172,8 +173,10 @@ String buildver="0.4";
 // 20 - SSH
 // 21 - Microphone
 // 22 - DPWO-ESP32
-// 23 - BadUSB(TODO)
+// 23 - BadUSB
 // 24 - TELNET client(TODO)
+// 25 - Keyboard
+// 26 - TCP port scan
 
 #include <IRremoteESP8266.h>
 #include <IRsend.h>
@@ -352,6 +355,7 @@ MENU mmenu[] = {
   { "WiFi", 12},
   { "QR Codes", 18},
   { "BadUSB", 23},
+  { "Keyboard", 25},
   { "Microphone", 21},
   { "Settings", 2},
 };
@@ -1413,6 +1417,9 @@ void wsmenu_loop() {
       case 7:
         current_proc = 24;
         break;
+      case 8:
+        current_proc = 26;
+        break;
     }
   }
 }
@@ -1502,6 +1509,8 @@ void wscan_result_loop(){
   }
 }
 
+
+
 void wscan_setup(){
   rstOverride = false;  
   cursor = 0;
@@ -1550,7 +1559,7 @@ void bootScreen(){
   DISP.println("      \\^^^^  ==   \\_/   |");
   DISP.println("       `\\_   ===    \\.  |");
   DISP.println("       / /\\_   \\ /      |");
-  DISP.println("       |/   \\_  \\|      /     v0.4");
+  DISP.println("       |/   \\_  \\|      /     v0.5");
   DISP.println("              \\________/");
 
 
@@ -2053,7 +2062,9 @@ void loop() {
         break;
       case 24:
       //telnet_setup();
-      break; 
+        break; 
+      case 25:
+        keyboard_setup();
     }
   }
 
@@ -2145,8 +2156,9 @@ void loop() {
     case 24:
       //telnet_loop();
       break;
+    case 25:
+      keyboard_loop();
     
 
   }
 }
-
