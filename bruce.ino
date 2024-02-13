@@ -22,7 +22,7 @@ github.com/caioluders/DPWO
 #define CARDPUTER
 
 
-String buildver="0.5";
+String buildver="0.6";
 #define BGCOLOR BLACK
 #define FGCOLOR PURPLE
 
@@ -174,9 +174,11 @@ String buildver="0.5";
 // 21 - Microphone
 // 22 - DPWO-ESP32
 // 23 - BadUSB
-// 24 - TELNET client(TODO)
+// 24 - TELNET client
 // 25 - Keyboard
 // 26 - TCP port scan
+// 27 - Template Menu
+// 28 - Deauth
 
 #include <IRremoteESP8266.h>
 #include <IRsend.h>
@@ -186,14 +188,14 @@ String buildver="0.5";
 #include "WORLD_IR_CODES.h"
 #include "sd.h"
 #include "portal.h"
-//#include "telnet.h"
+//#include "deauth.h"
+#include "esp_wifi.h"
 #include "dpwo.h"
 #include "sniffer.h"
-#include "ssh.h"
+#include "clients.h"
 #include "usb.h"
 #include <BLEUtils.h>
 #include <BLEServer.h>
-//#include "WifiMgmtHdr.h"
 
 
 
@@ -209,6 +211,16 @@ bool androidPair = false;   // Internal flag to place AppleJuice into Android Pa
 bool maelstrom = false;     // Internal flag to place AppleJuice into Bluetooth Maelstrom mode
 bool portal_active = false; // Internal flag used to ensure NEMO Portal exits cleanly 
 const byte PortalTickTimer = 1000;
+
+
+// DEAUTH vars
+uint8_t channelDeauth;
+//uint8_t apMac;
+bool target_deauth_flg = false;
+bool target_deauth = false;
+int deauth_tick = 0;        // used to delay the deauth packets when combined to Nemo Portal
+bool clone_flg = false;
+// DEAUTH end
 
 #if defined(USE_EEPROM)
   #include <EEPROM.h>
@@ -335,7 +347,7 @@ bool check_next_press(){
 bool check_select_press(){
 #if defined(KB)
   M5Cardputer.update();
-  if (M5Cardputer.Keyboard.isKeyPressed(KEY_ENTER) || M5Cardputer.Keyboard.isKeyPressed('/')){
+  if (M5Cardputer.Keyboard.isKeyPressed(KEY_ENTER) || M5Cardputer.Keyboard.isKeyPressed('/') || M5Cardputer.BtnA.wasClicked()){
     dimtimer();
     return true;
   }
@@ -623,6 +635,7 @@ int rotation = 1;
     }
     oldbattery = battery;
   }
+  
 
 /// TV-B-GONE ///
 void tvbgone_setup() {
@@ -784,6 +797,11 @@ void sendAllCodes() {
   DISP.println("Select: Go/Pause");
   DISP.println("Next: Exit");
 }
+
+
+
+
+
 
 /// CLOCK ///
 /// TIMESET ///
@@ -1244,6 +1262,8 @@ void aj_adv(){
   }
 }
 
+
+
 /// CREDITS ///
 void credits_setup(){
   DISP.fillScreen(WHITE);
@@ -1279,7 +1299,7 @@ void wifimenu() {
   char emptySSID[32];
   char beaconSSID[32];
   char randomName[32];
-  uint8_t channelIndex = 0;
+  uint8_t channeIndex = 0;
   uint8_t macAddr[6];
   uint8_t wifi_channel = 1;
   uint32_t currentTime = 0;
@@ -1362,12 +1382,12 @@ void btmaelstrom_loop(){
 MENU wsmenu[] = {
   { "Back", 5},
   { "Scan Wifi", 0},
-  { "Deauth(TODO)", 1},
+  { "Deauth", 1},
   { "DPWO-ESP32", 2},
   { "Raw sniffer", 3},
   { "EVIL portal", 4},
   { "SSH", 6},
-  { "TELNET(TODO)", 7},
+  { "TELNET", 7},
 };
 int wsmenu_size = sizeof(wsmenu) / sizeof (MENU);
 
@@ -1397,7 +1417,7 @@ void wsmenu_loop() {
         current_proc = 14;
         break;
       case 1:
-        //spamtype = 1; //aaaAAAaAAAa no wifispam here
+        current_proc = 28;
         break;
       case 2:
         current_proc = 22;
@@ -1406,7 +1426,7 @@ void wsmenu_loop() {
         current_proc = 11;
         break;
       case 4:
-        current_proc = 19;
+        current_proc = 27;
         break;
       case 5:
         current_proc = 1;
@@ -1559,7 +1579,7 @@ void bootScreen(){
   DISP.println("      \\^^^^  ==   \\_/   |");
   DISP.println("       `\\_   ===    \\.  |");
   DISP.println("       / /\\_   \\ /      |");
-  DISP.println("       |/   \\_  \\|      /     v0.5");
+  DISP.println("       |/   \\_  \\|      /     v0.6");
   DISP.println("              \\________/");
 
 
@@ -1637,27 +1657,50 @@ void qrmenu_loop() {
 }
 
 /// EVIL PORTAL
-/*
-    /// SD SELECT TEMPLATE IF HAS SD CARD///
-  MENU portal_select[] = {
 
-    { "index.html"}, // We jump to the region menu first
-    { "index2.html"},
-
-  };
-  int portal_size = sizeof(portal_select) / sizeof(MENU);
+struct MenuItem {
+  String filename;
+};
 
 
-/// SD SELECT TEMPLATE IF HAS SD CARD///
-MENU portal_select[50]; // Assuming a maximum of 50 HTML files, adjust as needed
+MenuItem portal_select[50]; //50 templates max
 int portal_size = 0;
+int cursorTemplate = 0;
+//String selectedTemplate;
 
-void template_select_setup(){
-cursor = 0;
+void drawmenuTemplate(MenuItem menu[], int size);
+
+void drawmenuTemplate(MenuItem menu[], int size) {
+  DISP.setTextSize(SMALL_TEXT);
+  DISP.fillScreen(BGCOLOR);
+  DISP.setCursor(0, 5, 1);
+
+  // scrolling menu
+  if (cursorTemplate > 5) {
+    for (int i = 0 + (cursorTemplate - 5); i < size; i++) {
+      DISP.print((cursorTemplate == i) ? ">" : " ");
+      DISP.println(menu[i].filename);
+    }
+  } else {
+    for (int i = 0; i < size; i++) {
+      DISP.print((cursorTemplate == i) ? ">" : " ");
+      DISP.println(menu[i].filename);
+    }
+  }
+}
+
+void template_select_setup() {
+  cursorTemplate = 0;
   rstOverride = true;
 
   File root = SD.open("/");
-  
+  DISP.fillScreen(BGCOLOR);
+  DISP.setTextColor(WHITE, BGCOLOR);
+  DISP.setCursor(0, 0);
+  DISP.print("Searching \ntemplates...");
+  DISP.setTextColor(FGCOLOR, BGCOLOR);
+  DISP.setCursor(0, 0);
+
   while (true) {
     File file = root.openNextFile();
     if (!file) {
@@ -1668,10 +1711,15 @@ cursor = 0;
     } else {
       String filename = file.name();
       if (filename.endsWith(".html")) {
-        Serial.print("HTML file: ");
         Serial.println(filename);
-        
-        //TODO: append filename String to portal_select
+
+        if (portal_size < 50) {
+          portal_select[portal_size].filename = filename;
+          portal_size++;
+        } else {
+          Serial.println("Too many HTML files!.");
+          break;
+        }
       }
     }
 
@@ -1680,28 +1728,40 @@ cursor = 0;
 
   root.close();
 
-  // Draw the menu using the dynamically populated portal_select
-  drawmenu(portal_select, portal_size);
+
+  drawmenuTemplate(portal_select, portal_size);
 }
 
-void template_select_loop(){
-//void mmenu_loop() {
+void template_select_loop() {
   if (check_next_press()) {
-    cursor++;
-    cursor = cursor % 2; // NUM_TEMPLATES
-    drawmenu(portal_select,portal_size);
+    cursorTemplate++;
+    cursorTemplate = cursorTemplate % portal_size;
+    drawmenuTemplate(portal_select, portal_size);
     delay(250);
   }
+
   if (check_select_press()) {
     rstOverride = false;
     isSwitching = true;
-    current_proc = portal_select[cursor].command;
+    Serial.println("FILE CHOOSED:");
+    Serial.println(portal_select[cursorTemplate].filename);
+    selectedTemplate = portal_select[cursorTemplate].filename;
+    current_proc = 19;
+
   }
-//}
-
-
 }
-*/
+
+
+
+
+
+
+
+
+
+
+wifi_ap_record_t ap_record;
+
 String apSsidName = "";
 
 void portal_setup(){
@@ -1720,16 +1780,8 @@ void portal_setup(){
   portal_active = true;    
   cursor = 0;
   rstOverride = true;
-  printHomeToScreen(apSsidName);
+  printHomeToScreen(apSsidName, selectedTemplate);
   delay(500); // Prevent switching after menu loads up
-    
-  /*
-#if defined(RTC)
-  { "Clock", 0},
-#endif
-*/
-
-
 
 
 }
@@ -1739,7 +1791,7 @@ void portal_loop(){
     lastTick = millis();
     if (totalCapturedCredentials != previousTotalCapturedCredentials) {
       previousTotalCapturedCredentials = totalCapturedCredentials;
-      printHomeToScreen(apSsidName);
+      printHomeToScreen(apSsidName, selectedTemplate);
     }
   }
   dnsServer.processNextRequest();
@@ -1753,6 +1805,125 @@ void portal_loop(){
     delay(500);
   }
 }
+
+
+
+//DEAUTH
+
+
+void deauth_setup(){
+    // Start the Access point service as Hidden
+    WiFi.mode(WIFI_AP);
+    DISP.fillScreen(BGCOLOR);
+    DISP.setCursor(0, 0);
+    DISP.println("Enter SSID name: ");
+    waitForInput(apSsidName);
+    WiFi.softAP(apSsidName, emptyString, channelDeauth, 1, 4, false);
+    IPAddress apIP = WiFi.softAPIP();
+
+
+    DISP.fillScreen(BGCOLOR);
+    DISP.setCursor(0, 5, 1);
+    DISP.setTextSize(BIG_TEXT);
+    DISP.setTextColor(TFT_RED, BGCOLOR);
+    DISP.println("Deauth Atk");
+    DISP.setTextSize(SMALL_TEXT);
+    DISP.setTextColor(FGCOLOR, BGCOLOR);
+    DISP.print("\nSSID: " + apSsidName);
+    DISP.print("\n");
+    DISP.printf("CH: " + channelDeauth);
+    //DISP.print("> " + apMac);
+
+    cursor = 0;
+    rstOverride = false;
+    delay(500); // Prevent switching after menu loads up
+  }
+  void deauth_loop(){
+
+    if (target_deauth == true) {                                                                 // DEAUTH
+      // wsl_bypasser_send_deauth_frame(&ap_record, channelDeauth);                                       // DEAUTH         CREATE AND SEND FRAME
+      DISP.setTextSize(SMALL_TEXT);                                                              // DEAUTH
+      DISP.setTextColor(TFT_RED, BGCOLOR);                                                       // DEAUTH
+      DISP.setCursor(1, 115);                                                                    // DEAUTH
+      DISP.println("DEAUTH STOPED");                                                             // DEAUTH
+      DISP.setTextColor(FGCOLOR, BGCOLOR);                                                       // DEAUTH
+    } else{                                                                                      // DEAUTH
+      DISP.setTextSize(SMALL_TEXT);                                                              // DEAUTH
+      DISP.setTextColor(TFT_RED, BGCOLOR);                                                       // DEAUTH
+      DISP.setCursor(1, 115);                                                                    // DEAUTH
+      DISP.println("DEAUTH STARTED");                                                            // DEAUTH
+      DISP.setTextColor(FGCOLOR, BGCOLOR);                                                       // DEAUTH
+    }                                                                                            // DEAUTH
+
+    //delay(20); //from 200
+
+    /*
+      wifict = WiFi.scanNetworks();
+    */
+
+    if (check_select_press()){
+        //Serial.println("BOTAO APERTADO---");
+        wifict = WiFi.scanNetworks();
+        //Serial.println("SCAN OK---");
+        delay(5000);
+
+          int target;
+
+          for(int i; i < wifict;i++){
+            //Serial.printf("TENTATIVA --- %d",i);
+            if(WiFi.SSID(i) == apSsidName){
+              //Serial.println("TARGET FOUND");
+            
+              target = i;
+            //Serial.println(target);
+              break;
+            }
+          }
+
+          //apMac = WiFi.BSSID(target);
+          //Serial.println("ANTES DE SETAR CHANNEL DEAUTH");
+
+          channelDeauth = static_cast<uint8_t>(WiFi.channel(target));
+
+          uint8_t* bssid = new uint8_t[6];  // If dynamically allocated
+
+          bssid = WiFi.BSSID(target);
+
+          Serial.println("Before memcpy");
+          
+
+          memcpy(ap_record.bssid, bssid, 6);  
+
+          //Serial.println("Before memcpy");
+
+          Serial.print("Address of bssid: ");
+          Serial.println((uintptr_t)bssid, HEX);
+          Serial.print("Address of ap_record.bssid: ");
+          Serial.println((uintptr_t)ap_record.bssid, HEX);
+
+          rstOverride = false;
+          //current_proc = 28;
+          isSwitching = true;
+          target_deauth = !target_deauth;                                                             // DEAUTH
+          DISP.setCursor(1, 115);                                                                     // DEAUTH
+          DISP.println("......................");                                                     // DEAUTH
+          delay(500);     
+    }                                                                                             // DEAUTH
+
+    if (check_next_press()){
+      WiFi.mode(WIFI_MODE_STA);
+      rstOverride = false;
+      isSwitching = true;
+      target_deauth = false;                                                                      // DEAUTH
+      current_proc = 1;
+      delay(500);
+    }
+  }
+  // DEAUTH attack END
+
+
+
+
 
 // MICROPHONE
 
@@ -2038,6 +2209,7 @@ void loop() {
         qrmenu_setup();
         break;
       case 19:
+        //template_select_setup();
         portal_setup();
         //template_select_setup();
         break;
@@ -2061,11 +2233,20 @@ void loop() {
         usb_setup();
         break;
       case 24:
-      //telnet_setup();
+      telnet_setup();
         break; 
       case 25:
         keyboard_setup();
+      case 26:
+        // TCP scan
+        break;
+      case 27:
+        template_select_setup();
+      case 28:
+        //deauth_setup();
+        break;
     }
+    
   }
 
   switch (current_proc) {
@@ -2154,11 +2335,19 @@ void loop() {
       usb_loop();
       break;
     case 24:
-      //telnet_loop();
+      telnet_loop();
       break;
     case 25:
       keyboard_loop();
-    
+    case 26:
+      // TCP scan
+      break;
+    case 27:
+      template_select_loop();
+      break;
+    case 28:
+      //deauth_loop();
+      break;
 
   }
 }

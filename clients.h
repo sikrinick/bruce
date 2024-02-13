@@ -10,7 +10,7 @@ String ssid     = "";      // Replace with your WiFi SSID
 //TODO: mudar para char 8bits ao inves de String
 String password = "";  // Replace with your WiFi password
 
-// SSH server configuration (initialize as empty strings)
+// SSH server configuration (initialize as mpty strings)
 String ssh_host     = "";
 String ssh_user     = "";
 String ssh_password = "";
@@ -88,7 +88,7 @@ void waitForInput(String& input) {
 
 void ssh_loop() {
     M5Cardputer.update();
-    DISP.setTextColor(WHITE, BGCOLOR);
+    //DISP.setTextColor(WHITE, BGCOLOR);
 
     // Handle keyboard input with debounce
     if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isPressed()) {
@@ -195,7 +195,7 @@ void ssh_setup(){
     auto cfg = M5.config();
     M5Cardputer.begin(cfg, true);
     DISP.setRotation(1);
-    DISP.setTextSize(SMALL_TEXT);  // Set text size
+    DISP.setTextSize(TINY_TEXT);  // Set text size
     DISP.clear();
     DISP.print("WIFI SSID:\n");
     waitForInput(ssid);
@@ -205,7 +205,7 @@ void ssh_setup(){
     // Connect to WiFi
     WiFi.begin(ssid, password.c_str());
     delay(2000);
-    while (WiFi.status() != WL_CONNECTED) {
+    if (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
         DISP.setTextColor(RED, BGCOLOR);
@@ -232,10 +232,12 @@ void ssh_setup(){
     waitForInput(ssh_password);
     
 
+    Serial.println("BEFORE SSH");
     my_ssh_session = ssh_new();
+    Serial.println("AFTER SSH");
 
 
-
+    
     if (my_ssh_session == NULL) {
         DISP.setTextColor(RED, BGCOLOR);
         DISP.println("SSH Shell request error.");
@@ -244,7 +246,8 @@ void ssh_setup(){
     }
     ssh_options_set(my_ssh_session, SSH_OPTIONS_HOST, ssh_host.c_str());
     ssh_options_set(my_ssh_session, SSH_OPTIONS_USER, ssh_user.c_str());
-
+    Serial.println("AFTER COMPARE AND OPTION SET");
+    
     if (ssh_connect(my_ssh_session) != SSH_OK) {
         DISP.setTextColor(RED, BGCOLOR);
         DISP.println("SSH Shell request error.");
@@ -294,6 +297,7 @@ void ssh_setup(){
         ssh_free(my_ssh_session);
         return;
     }
+    
 
     Serial.println("SSH setup completed.");
     DISP.setTextColor(GREEN, BGCOLOR);
@@ -301,30 +305,33 @@ void ssh_setup(){
     delay(2000);
     DISP.clear();
     DISP.setTextColor(WHITE, BGCOLOR);
-    DISP.setTextSize(TINY_TEXT);  // Set text size
+    
 }
 
 
 
 
 
-/*
+
 #include <string.h>
 #include <esp_wifi.h>
 #include <esp_event.h>
-#include <esp_log.h>
 #include <esp_system.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <lwip/sockets.h>
 
-#define TAG "TELNET_CLIENT"
-
 String telnet_server_string = ""; // Replace with your TELNET server's IP address
-char telnet_server_ip[12];
+char* telnet_server_ip;
+//static const int telnet_server_port = 23; // TELNET protocol default port
+
+//char telnet_server_ip[16]; // Buffer to hold the TELNET server's IP address
 static const int telnet_server_port = 23; // TELNET protocol default port
 
 static int sock;
+
+
+//static int sock;
 
 char* stringTochar(String s)
 {
@@ -332,7 +339,7 @@ char* stringTochar(String s)
         return nullptr; // or handle the case where the string is empty
     }
 
-    static char arr[12]; // Make sure it's large enough to hold the IP address
+    static char arr[14]; // Make sure it's large enough to hold the IP address
     s.toCharArray(arr, sizeof(arr));
     return arr;
 }
@@ -375,10 +382,15 @@ static void telnet_setup() {
 
     DISP.setCursor(0, 0);
     DISP.print("TELNET Host: \n");
+
+    // Here the telnet_server_ip needs to be a char*, thats why the stringTochar()
+    // waitForInput is a String
     waitForInput(telnet_server_string);
     telnet_server_ip = stringTochar(telnet_server_string);
+    Serial.println(telnet_server_ip);
     
 }
+
 
 static void telnet_loop() {
     struct sockaddr_in dest_addr;
@@ -388,23 +400,36 @@ static void telnet_loop() {
 
     sock = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
     if (sock < 0) {
-        ESP_LOGE(TAG, "Unable to create socket");
+        Serial.println("Unable to create socket");
+        DISP.setTextColor(RED, BGCOLOR);
+        DISP.println("Unable to create socket");
+        DISP.setTextColor(FGCOLOR, BGCOLOR);
         return;
     }
 
     if (connect(sock, (struct sockaddr*)&dest_addr, sizeof(dest_addr)) != 0) {
-        ESP_LOGE(TAG, "Socket connection failed");
+        Serial.println("Socket connection failed");
+        DISP.setTextColor(RED, BGCOLOR);
+        DISP.println("Socket connection failed");
+        DISP.setTextColor(FGCOLOR, BGCOLOR);
         close(sock);
         return;
     }
 
-    ESP_LOGI(TAG, "Connected to TELNET server");
+    Serial.println("Connected to TELNET server");
+    DISP.setTextColor(GREEN, BGCOLOR);
+    DISP.println("Connected to TELNET server");
+    DISP.setTextColor(FGCOLOR, BGCOLOR);
+    delay(2000);
+    DISP.clear();
+    DISP.setCursor(0, 0);
+
+    String commandInput;
 
     while (1) {
-        // Your TELNET client logic goes here
-
-        // For example, sending a command to the server
-        const char *command = "Hello TELNET server!\r\n";
+        DISP.print("> ");
+        waitForInput(commandInput);
+        const char *command = commandInput.c_str();
         send(sock, command, strlen(command), 0);
 
         // You can also receive data from the server
@@ -412,14 +437,30 @@ static void telnet_loop() {
         int len = recv(sock, buffer, sizeof(buffer) - 1, 0);
         if (len > 0) {
             buffer[len] = '\0';
-            ESP_LOGI(TAG, "Received from server: %s", buffer);
+                        // Check for Telnet negotiation commands (IAC)
+                        /*
+            if (buffer[0] == 0xFF) {
+                // Skip Telnet negotiation command
+                continue;
+            }
+            */
+            DISP.setTextColor(WHITE, BGCOLOR);
+            Serial.printf("Received from server %s\n", buffer);
+            //DISP.printf("Received from server %s\n", buffer);
+            for (int i = 0; i < len; i++) {
+             Serial.printf("%02X ", buffer[i]);
+            }
+            DISP.printf("%s\n", buffer);
+
+            DISP.setTextColor(FGCOLOR, BGCOLOR);
+
         }
 
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
 
-*/
+
 
 
 

