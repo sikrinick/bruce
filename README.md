@@ -24,10 +24,13 @@ Hello, my name is Bruce.
 * EEPROM-backed Settings for rotation, brightness and, automatic dimming
 * Battery level and credits in settings menu
 * SSH Client
+* TELNET Client
 * DPWO-ESP32
 * Raw Sniffer - Saves PCAP to SD
 * BadUSB - Reads payload on SD card /badpayload.txt
+* Wireguard Tunneling - Reads config file on SD card /wg.conf
 * Keyboard - Use as a keyboard USB input
+* ARP Scan - Make it better on next version and print as a menu
 
 ## User Interface
 There are three main controls:
@@ -113,11 +116,10 @@ Contributions are welcome. Please look at the GitHub Issues for ideas to help en
 Things I'd like help on:
 * A new "Region" of TV-B-Gone that's full of additional IR codes that can turn RGB LED strips, air conditioners, fans, sound bars and the like on and off
 * Help refactoring how menus work. The way it was built was fine when it was one main menu with a few options. Now, adding a new sub-menu involves a lot of duplicated code.
-* TELNET client
+* ~~TELNET client~~
 * SMB client
 * Simple network scan
-* ~~BadUSB~~
-* Select EVIL portal template from SD card
+* Bluetooth Keyboard
 
 Things I probably won't merge in:
 * Bulk wifi deauthentication spamming
