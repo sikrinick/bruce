@@ -1,5 +1,6 @@
 # M5-Bruce
 Firmware for Cardputer
+![Bruce](https://github.com/pr3y/m5-bruce/blob/main/pic4.png) ~thx Luidiblu for the logo
 
 ## Name and Background
 Forked project, same intentions B)
