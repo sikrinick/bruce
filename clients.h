@@ -13,7 +13,10 @@ String password = "";  // Replace with your WiFi password
 // SSH server configuration (initialize as mpty strings)
 String ssh_host     = "";
 String ssh_user     = "";
+String ssh_port     = "";
 String ssh_password = "";
+
+char* ssh_port_char;
 
 // M5Cardputer setup
 //M5Canvas canvas(&DISP);
@@ -27,7 +30,19 @@ const unsigned long debounceDelay = 200;  // Adjust debounce delay as needed
 
 //ssh_init sshbind;
 ssh_session my_ssh_session;
-ssh_channel channel;
+ssh_channel channel_ssh;
+
+
+char* stringTochar(String s)
+{
+    if (s.length() == 0) {
+        return nullptr; // or handle the case where the string is empty
+    }
+
+    static char arr[14]; // Make sure it's large enough to hold the IP address
+    s.toCharArray(arr, sizeof(arr));
+    return arr;
+}
 
 void waitForInput(String& input);
 
@@ -120,9 +135,9 @@ void ssh_loop() {
                                        // accidental whitespaces/newlines
                 String message = commandBuffer.substring(
                     2);  // Get the command part, exclude the "> "
-                ssh_channel_write(channel, message.c_str(),
+                ssh_channel_write(channel_ssh, message.c_str(),
                                   message.length());  // Send the command
-                ssh_channel_write(channel, "\r",
+                ssh_channel_write(channel_ssh, "\r",
                                   1);  // Send exactly one carriage return (try
                                        // "\n" or "\r\n" if needed)
 
@@ -146,7 +161,7 @@ void ssh_loop() {
     // Read data from SSH server and display it, handling ANSI sequences
     char buffer[128];  // Reduced buffer size for less memory usage
     int nbytes =
-        ssh_channel_read_nonblocking(channel, buffer, sizeof(buffer), 0);
+        ssh_channel_read_nonblocking(channel_ssh, buffer, sizeof(buffer), 0);
     bool isAnsiSequence =
         false;  // To track when we are inside an ANSI sequence
 
@@ -175,9 +190,9 @@ void ssh_loop() {
     }
 
     // Handle channel closure and other conditions
-    if (nbytes < 0 || ssh_channel_is_closed(channel)) {
-        ssh_channel_close(channel);
-        ssh_channel_free(channel);
+    if (nbytes < 0 || ssh_channel_is_closed(channel_ssh)) {
+        ssh_channel_close(channel_ssh);
+        ssh_channel_free(channel_ssh);
         ssh_disconnect(my_ssh_session);
         ssh_free(my_ssh_session);
         DISP.println("\nSSH session closed.");
@@ -226,6 +241,12 @@ void ssh_setup(){
     // Prompt for SSH host, username, and password
     DISP.print("SSH Host: \n");
     waitForInput(ssh_host);
+    DISP.print("SSH Port: \n");
+    waitForInput(ssh_port);
+    
+    ssh_port_char = stringTochar(ssh_port);
+    uint16_t ssh_port_int = atoi(ssh_port_char);
+
     DISP.print("\nSSH Username: ");
     waitForInput(ssh_user);
     DISP.print("\nSSH Password: ");
@@ -245,6 +266,7 @@ void ssh_setup(){
         return;
     }
     ssh_options_set(my_ssh_session, SSH_OPTIONS_HOST, ssh_host.c_str());
+    ssh_options_set(my_ssh_session, SSH_OPTIONS_PORT, &ssh_port_int);
     ssh_options_set(my_ssh_session, SSH_OPTIONS_USER, ssh_user.c_str());
     Serial.println("AFTER COMPARE AND OPTION SET");
     
@@ -266,8 +288,8 @@ void ssh_setup(){
         return;
     }
 
-    channel = ssh_channel_new(my_ssh_session);
-    if (channel == NULL || ssh_channel_open_session(channel) != SSH_OK) {
+    channel_ssh = ssh_channel_new(my_ssh_session);
+    if (channel_ssh == NULL || ssh_channel_open_session(channel_ssh) != SSH_OK) {
         DISP.setTextColor(RED, BGCOLOR);
         DISP.println("SSH Shell request error.");
         Serial.println("SSH Channel open error.");
@@ -276,23 +298,23 @@ void ssh_setup(){
         return;
     }
 
-    if (ssh_channel_request_pty(channel) != SSH_OK) {
+    if (ssh_channel_request_pty(channel_ssh) != SSH_OK) {
         DISP.setTextColor(RED, BGCOLOR);
         DISP.println("SSH Shell request error.");
         Serial.println("SSH PTY request error.");
-        ssh_channel_close(channel);
-        ssh_channel_free(channel);
+        ssh_channel_close(channel_ssh);
+        ssh_channel_free(channel_ssh);
         ssh_disconnect(my_ssh_session);
         ssh_free(my_ssh_session);
         return;
     }
 
-    if (ssh_channel_request_shell(channel) != SSH_OK) {
+    if (ssh_channel_request_shell(channel_ssh) != SSH_OK) {
         DISP.setTextColor(RED, BGCOLOR);
         DISP.println("SSH Shell request error.");
         Serial.println("SSH Shell request error.");
-        ssh_channel_close(channel);
-        ssh_channel_free(channel);
+        ssh_channel_close(channel_ssh);
+        ssh_channel_free(channel_ssh);
         ssh_disconnect(my_ssh_session);
         ssh_free(my_ssh_session);
         return;
@@ -322,27 +344,20 @@ void ssh_setup(){
 #include <lwip/sockets.h>
 
 String telnet_server_string = ""; // Replace with your TELNET server's IP address
+String telnet_port_string = "";
 char* telnet_server_ip;
+char* telnet_server_port_char;
 //static const int telnet_server_port = 23; // TELNET protocol default port
 
 //char telnet_server_ip[16]; // Buffer to hold the TELNET server's IP address
-static const int telnet_server_port = 23; // TELNET protocol default port
+int telnet_server_port; // TELNET protocol default port
 
 static int sock;
 
 
 //static int sock;
 
-char* stringTochar(String s)
-{
-    if (s.length() == 0) {
-        return nullptr; // or handle the case where the string is empty
-    }
 
-    static char arr[14]; // Make sure it's large enough to hold the IP address
-    s.toCharArray(arr, sizeof(arr));
-    return arr;
-}
 
 static void telnet_setup() {
    DISP.clear();
@@ -387,7 +402,17 @@ static void telnet_setup() {
     // waitForInput is a String
     waitForInput(telnet_server_string);
     telnet_server_ip = stringTochar(telnet_server_string);
+    //Serial.println(telnet_server_ip);
+
+    DISP.print("TELNET Port: \n");
+    waitForInput(telnet_port_string);
+    char arr2[5];
+    //telnet_server_port_char = 
+    telnet_port_string.toCharArray(arr2, sizeof(arr2));
+    //telnet_server_port_char = stringTochar(telnet_port_string);
+    telnet_server_port = atoi(arr2);
     Serial.println(telnet_server_ip);
+    Serial.println(telnet_server_port);
     
 }
 
