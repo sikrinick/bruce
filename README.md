@@ -1,7 +1,7 @@
 # M5-Bruce
 Firmware for offensive pranks to Cardputer
 
-![Bruce](https://github.com/pr3y/m5-bruce/blob/main/pic4.png) ~thx Luidiblu for image
+![Bruce](https://github.com/pr3y/m5-bruce/blob/main/pic4.png) ~thx Luidiblu for the image
 
 ## Name and Background
 Forked project, same intentions B)
