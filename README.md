@@ -89,6 +89,12 @@ If you want to customize BRUCE or contribute to the project, you should be famil
 * Install necessary libraries. In Sketch -> Include Library -> Library Manager, search for and install the following libraries and any dependencies they require:
   * M5StickCPlus, M5StickC or M5Cardputer
   * IRRemoteESP8266
+  * Keyboard
+  * AsyncTCP
+  * LibSSH-ESP32
+  * Regexp
+  * Time
+  * WireGuard-ESP32
 * Un-comment the appropriate `#define` line near the top for your platform (STICK_C, STICK_C_PLUS or CARDPUTER)
 * Switch partition schemes. `Tools` -> `Partition Scheme` -> `No OTA (Large APP)` - sometimes this option is labeled `Huge APP` 
 * Configuration
@@ -120,8 +126,9 @@ Things I'd like help on:
 * Help refactoring how menus work. The way it was built was fine when it was one main menu with a few options. Now, adding a new sub-menu involves a lot of duplicated code.
 * Responder for ESP32 (?)
 * SMB client
-* Simple network scan
+* Simple network scan (Already with ARP scan but results of it should be a menu, being able to select hosts and check ports)
 * Bluetooth Keyboard
+* Adding support for RFID and other m5-stack modules such as ethernet cable
 
 Things I probably won't merge in:
 * Bulk wifi deauthentication spamming
