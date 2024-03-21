@@ -178,7 +178,7 @@ void key_input(String bad_script = "/badpayload.txt")
   //Keyboard.releaseAll();
   delay(1000);
 
- if (SD.exists("/badpayload.txt")) {
+ if (SD.exists(bad_script)) {
     File payloadFile = SD.open(bad_script, "r");
     if (payloadFile) {
       DISP.setCursor(0, 40);
