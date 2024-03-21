@@ -3138,7 +3138,7 @@ void loop() {
         mic_loop();
         break;
       case 26:
-        dpwo_loop();
+        dpwoLoop();
         break;                                                    // SDCARD M5Stick
       case 27:
         usb_loop();
