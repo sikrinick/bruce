@@ -288,6 +288,7 @@ void usb_setup()
   String bad_script = "";
   bool ClickPwrBtn=false;
   bool ClickSideBtn=false;
+  readFs("/");
 
   while(1) {
 	  // DRAW file list ==============================================================================================================
