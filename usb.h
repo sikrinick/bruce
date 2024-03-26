@@ -220,14 +220,15 @@ void key_input(String bad_script = "/badpayload.txt")
 	} else {
 		Command = lineContent.substring(0, lineContent.indexOf(' ')); // get the command
 		Argument = lineContent.substring(lineContent.indexOf(' ') + 1); // get the argument
-		Command = Command.c_str();
-		Argument = Argument.c_str();
-		ArgChar = Argument.charAt(0);
 		RepeatTmp="1";
 	}
 	uint16_t i;
 	for(i=0; i < RepeatTmp.toInt(); i++) {
 		String OldCmd = "";
+		Command = Command.c_str();
+		Argument = Argument.c_str();
+		ArgChar = Argument.charAt(0);
+		
 		if (Argument=="F1" || Argument=="F2" || Argument=="F3" || Argument=="F4" || Argument=="F5" || Argument=="F6" || Argument=="F7" || Argument=="F8" || Argument=="F9" || Argument=="F10" || Argument=="F11" || Argument=="F2" || Argument == "DELETE" || Argument == "TAB") { ArgIsCmd = true; }
 		
 		if(Command=="REM") { Serial.println(" // " + Argument); }
