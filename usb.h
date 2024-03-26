@@ -187,10 +187,12 @@ void key_input(String bad_script = "/badpayload.txt")
       String lineContent = "";
       String Command = "";
       String Argument = "";
+      String RepeatTmp = "";
       char ArgChar;
       bool ArgIsCmd; // Verifies if the Argument is DELETE, TAB or F1-F12
       int cmdFail; // Verifies if the command is supported, mus pass through 2 if else statemens and summ 2 to not be supported
       int line; // Shows 3 commands of the payload on screen to follow the execution
+      
 	    
       Keyboard.releaseAll();
       DISP.setTextSize(1);  
@@ -202,82 +204,107 @@ void key_input(String bad_script = "/badpayload.txt")
         lineContent = payloadFile.readStringUntil('\n');
 	ArgIsCmd = false;
 	cmdFail = 0;
-        Command = lineContent.substring(0, lineContent.indexOf(' ')); // get the command
-	Argument = lineContent.substring(lineContent.indexOf(' ') + 1); // get the argument
- 	Command = Command.c_str();
-        Argument = Argument.c_str();
-        ArgChar = Argument.charAt(0);
+	RepeatTmp = lineContent.substring(0, lineContent.indexOf(' '));
+	RepeatTmp = RepeatTmp.c_str();
+	if(RepeatTmp == "REPEAT") {
+		if(lineContent.indexOf(' ')>0) {
+			RepeatTmp = lineContent.substring(lineContent.indexOf(' ') + 1); // how many times it will repeat, using .toInt() conversion;
+			if(RepeatTmp.toInt() == 0) {
+				RepeatTmp = "1";
+				DISP.setTextColor(RED); DISP.println("REPEAT argument NaN, repeating once");
+			}
+		} else{
+			RepeatTmp = "1";
+			DISP.setTextColor(RED); DISP.println("REPEAT without argument, repeating once");
+		}
+	} else {
+		Command = lineContent.substring(0, lineContent.indexOf(' ')); // get the command
+		Argument = lineContent.substring(lineContent.indexOf(' ') + 1); // get the argument
+		Command = Command.c_str();
+		Argument = Argument.c_str();
+		ArgChar = Argument.charAt(0);
+		RepeatTmp="0";
+	}
+	uint16_t i;
+	for(i=0; i < RepeatTmp.toInt(); i++) {
+		String OldCmd = "";
+		if (Argument=="F1" || Argument=="F2" || Argument=="F3" || Argument=="F4" || Argument=="F5" || Argument=="F6" || Argument=="F7" || Argument=="F8" || Argument=="F9" || Argument=="F10" || Argument=="F11" || Argument=="F2" || Argument == "DELETE" || Argument == "TAB") { ArgIsCmd = true; }
+		
+		if(Command=="REM") { Serial.println(" // " + Argument); }
+	        else if(Command=="DELAY") delay(Argument.toInt());
+	        else if(Command=="DEFAULTDELAY" || Command=="DEFAULT_DELAY") delay(DEF_DELAY); //100ms
+	        else if(Command=="STRING") Keyboard.print(Argument); 
+		else if(Command=="STRINGLN") Keyboard.println(Argument); // I Don't know if it works
+	        else if(Command=="ENTER") { Keyboard.press(KEYRETURN); Keyboard.releaseAll(); }
+	        else if(Command=="GUI" || Command=="WINDOWS") { Keyboard.press(KEYLEFT_GUI);			 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { OldCmd = Command.c_str(); Command = Argument.c_str(); } } // Save Command into OldCmd and then set Command = Argument
+	        else if(Command=="SHIFT") { Keyboard.press(KEYLEFT_SHIFT);					 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { OldCmd = Command.c_str(); Command = Argument.c_str(); } } // This is made to turn the code faster and to recover
+	        else if(Command=="ALT") { Keyboard.press(KEYLEFT_ALT);						 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { OldCmd = Command.c_str(); Command = Argument.c_str(); } } // the Command after the if else statements, in order to
+	        else if(Command=="CTRL" || Command=="CONTROL") { Keyboard.press(KEYLEFT_CTRL);			 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { OldCmd = Command.c_str(); Command = Argument.c_str(); } } // the command REPEAT work as intended.
+	        else if(Command=="CTRL-ALT") { Keyboard.press(KEYLEFT_ALT); Keyboard.press(KEYLEFT_CTRL);	 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { OldCmd = Command.c_str(); Command = Argument.c_str(); } }
+	        else if(Command=="CTRL-SHIFT") { Keyboard.press(KEYLEFT_CTRL); Keyboard.press(KEYLEFT_SHIFT);	 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { OldCmd = Command.c_str(); Command = Argument.c_str(); } }
+	        else if(Command=="ALT-SHIFT") { Keyboard.press(KEYLEFT_ALT); Keyboard.press(KEYLEFT_SHIFT);	 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { OldCmd = Command.c_str(); Command = Argument.c_str(); } }
+	        else if(Command=="ALT-GUI") { Keyboard.press(KEYLEFT_ALT); Keyboard.press(KEYLEFT_GUI);		 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { OldCmd = Command.c_str(); Command = Argument.c_str(); } }
+	        else if(Command=="GUI-SHIFT") { Keyboard.press(KEYLEFT_GUI); Keyboard.press(KEYLEFT_SHIFT);	 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { OldCmd = Command.c_str(); Command = Argument.c_str(); } }
+	        else if(Command=="DOWNARROW") { Keyboard.press(KEYDOWN_ARROW); Keyboard.releaseAll(); }
+	        else if(Command=="DOWN") { Keyboard.press(KEYDOWN_ARROW); Keyboard.releaseAll(); }
+	        else if(Command=="LEFTARROW") { Keyboard.press(KEYLEFT_ARROW); Keyboard.releaseAll(); }
+	        else if(Command=="LEFT") { Keyboard.press(KEYLEFT_ARROW); Keyboard.releaseAll(); }
+	        else if(Command=="RIGHTARROW") { Keyboard.press(KEYRIGHT_ARROW); Keyboard.releaseAll(); }
+	        else if(Command=="RIGHT") { Keyboard.press(KEYRIGHT_ARROW); Keyboard.releaseAll(); }
+	        else if(Command=="UPARROW") { Keyboard.press(KEYUP_ARROW); Keyboard.releaseAll(); }
+	        else if(Command=="UP") { Keyboard.press(KEYUP_ARROW); Keyboard.releaseAll(); }
+	        else if(Command=="BREAK") { Keyboard.press(KEYPAUSE); Keyboard.releaseAll(); }
+	        else if(Command=="CAPSLOCK")  { Keyboard.press(KEYCAPS_LOCK); Keyboard.releaseAll(); }
+	        else if(Command=="PAUSE") { Keyboard.press(KEYPAUSE); Keyboard.releaseAll(); }
+	        else if(Command=="BACKSPACE") { Keyboard.press(KEYBACKSPACE); Keyboard.releaseAll(); }
+	        else if(Command=="END") { Keyboard.press(KEYEND); Keyboard.releaseAll(); }
+	        else if(Command=="ESC" || Command=="ESCAPE") { Keyboard.press(KEYESC); Keyboard.releaseAll(); }
+	        else if(Command=="HOME")  { Keyboard.press(KEYHOME); Keyboard.releaseAll(); }
+	        else if(Command=="INSERT") { Keyboard.press(KEYINSERT); Keyboard.releaseAll(); }
+	        else if(Command=="NUMLOCK") { Keyboard.press(KEYNUM_LOCK); Keyboard.releaseAll(); }
+	        else if(Command=="PAGEUP") { Keyboard.press(KEYPAGE_UP); Keyboard.releaseAll(); }
+	        else if(Command=="PAGEDOWN") { Keyboard.press(KEYPAGE_DOWN); Keyboard.releaseAll(); }
+	        else if(Command=="PRINTSCREEN") { Keyboard.press(KEYPRINT_SCREEN); Keyboard.releaseAll(); }
+	        else if(Command=="SCROLLOCK") { Keyboard.press(KEYSCROLL_LOCK); Keyboard.releaseAll(); }
+	        else if(Command=="MENU") { Keyboard.press(KEYMENU); Keyboard.releaseAll(); }
+		else { cmdFail++; }
+	
+	        if(Command=="F1") { Keyboard.press(KEYF1); Keyboard.releaseAll(); }
+	        else if(Command=="F2") { Keyboard.press(KEYF2); Keyboard.releaseAll(); }
+	        else if(Command=="F3") { Keyboard.press(KEYF3); Keyboard.releaseAll(); }
+	        else if(Command=="F4") { Keyboard.press(KEYF4); Keyboard.releaseAll(); }
+	        else if(Command=="F5") { Keyboard.press(KEYF5); Keyboard.releaseAll(); }
+	        else if(Command=="F6") { Keyboard.press(KEYF6); Keyboard.releaseAll(); }
+	        else if(Command=="F7") { Keyboard.press(KEYF7); Keyboard.releaseAll(); }
+	        else if(Command=="F8") { Keyboard.press(KEYF8); Keyboard.releaseAll(); }
+	        else if(Command=="F9") { Keyboard.press(KEYF9); Keyboard.releaseAll(); }
+	        else if(Command=="F10") { Keyboard.press(KEYF10); Keyboard.releaseAll(); }
+	        else if(Command=="F11") { Keyboard.press(KEYF11); Keyboard.releaseAll(); }
+	        else if(Command=="F12") { Keyboard.press(KEYF12); Keyboard.releaseAll(); }
+	        else if(Command=="TAB") { Keyboard.press(KEYTAB); Keyboard.releaseAll(); }
+		else if(Command=="DELETE") { Keyboard.press(KEYDELETE); Keyboard.releaseAll(); }
+		else { cmdFail++; }
 
-	if (Argument=="F1" || Argument=="F2" || Argument=="F3" || Argument=="F4" || Argument=="F5" || Argument=="F6" || Argument=="F7" || Argument=="F8" || Argument=="F9" || Argument=="F10" || Argument=="F11" || Argument=="F2" || Argument == "DELETE" || Argument == "TAB") { ArgIsCmd = true; }
-        
-        
-        if(Command=="REM") { Serial.println(" // " + Argument); }
-        else if(Command=="DELAY") delay(Argument.toInt());
-        else if(Command=="DEFAULTDELAY" || Command=="DEFAULT_DELAY") delay(DEF_DELAY); //100ms
-        else if(Command=="STRING") Keyboard.print(Argument); 
-	else if(Command=="STRINGLN") Keyboard.println(Argument); // I Don't know if it works
-        else if(Command=="ENTER") { Keyboard.press(KEYRETURN); Keyboard.releaseAll(); }
-        else if(Command=="GUI" || Command=="WINDOWS") { Keyboard.press(KEYLEFT_GUI);			 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
-        else if(Command=="SHIFT") { Keyboard.press(KEYLEFT_SHIFT);					 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
-        else if(Command=="ALT") { Keyboard.press(KEYLEFT_ALT);						 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
-        else if(Command=="CTRL" || Command=="CONTROL") { Keyboard.press(KEYLEFT_CTRL);			 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
-        else if(Command=="CTRL-ALT") { Keyboard.press(KEYLEFT_ALT); Keyboard.press(KEYLEFT_CTRL);	 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
-        else if(Command=="CTRL-SHIFT") { Keyboard.press(KEYLEFT_CTRL); Keyboard.press(KEYLEFT_SHIFT);	 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
-        else if(Command=="ALT-SHIFT") { Keyboard.press(KEYLEFT_ALT); Keyboard.press(KEYLEFT_SHIFT);	 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
-        else if(Command=="ALT-GUI") { Keyboard.press(KEYLEFT_ALT); Keyboard.press(KEYLEFT_GUI);		 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
-        else if(Command=="GUI-SHIFT") { Keyboard.press(KEYLEFT_GUI); Keyboard.press(KEYLEFT_SHIFT);	 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
-        else if(Command=="DOWNARROW") { Keyboard.press(KEYDOWN_ARROW); Keyboard.releaseAll(); }
-        else if(Command=="DOWN") { Keyboard.press(KEYDOWN_ARROW); Keyboard.releaseAll(); }
-        else if(Command=="LEFTARROW") { Keyboard.press(KEYLEFT_ARROW); Keyboard.releaseAll(); }
-        else if(Command=="LEFT") { Keyboard.press(KEYLEFT_ARROW); Keyboard.releaseAll(); }
-        else if(Command=="RIGHTARROW") { Keyboard.press(KEYRIGHT_ARROW); Keyboard.releaseAll(); }
-        else if(Command=="RIGHT") { Keyboard.press(KEYRIGHT_ARROW); Keyboard.releaseAll(); }
-        else if(Command=="UPARROW") { Keyboard.press(KEYUP_ARROW); Keyboard.releaseAll(); }
-        else if(Command=="UP") { Keyboard.press(KEYUP_ARROW); Keyboard.releaseAll(); }
-        else if(Command=="BREAK") { Keyboard.press(KEYPAUSE); Keyboard.releaseAll(); }
-        else if(Command=="CAPSLOCK")  { Keyboard.press(KEYCAPS_LOCK); Keyboard.releaseAll(); }
-        else if(Command=="PAUSE") { Keyboard.press(KEYPAUSE); Keyboard.releaseAll(); }
-        else if(Command=="BACKSPACE") { Keyboard.press(KEYBACKSPACE); Keyboard.releaseAll(); }
-        else if(Command=="END") { Keyboard.press(KEYEND); Keyboard.releaseAll(); }
-        else if(Command=="ESC" || Command=="ESCAPE") { Keyboard.press(KEYESC); Keyboard.releaseAll(); }
-        else if(Command=="HOME")  { Keyboard.press(KEYHOME); Keyboard.releaseAll(); }
-        else if(Command=="INSERT") { Keyboard.press(KEYINSERT); Keyboard.releaseAll(); }
-        else if(Command=="NUMLOCK") { Keyboard.press(KEYNUM_LOCK); Keyboard.releaseAll(); }
-        else if(Command=="PAGEUP") { Keyboard.press(KEYPAGE_UP); Keyboard.releaseAll(); }
-        else if(Command=="PAGEDOWN") { Keyboard.press(KEYPAGE_DOWN); Keyboard.releaseAll(); }
-        else if(Command=="PRINTSCREEN") { Keyboard.press(KEYPRINT_SCREEN); Keyboard.releaseAll(); }
-        else if(Command=="SCROLLOCK") { Keyboard.press(KEYSCROLL_LOCK); Keyboard.releaseAll(); }
-        else if(Command=="MENU") { Keyboard.press(KEYMENU); Keyboard.releaseAll(); }
-	else { cmdFail++; }
-
-        if(Command=="F1") { Keyboard.press(KEYF1); Keyboard.releaseAll(); }
-        else if(Command=="F2") { Keyboard.press(KEYF2); Keyboard.releaseAll(); }
-        else if(Command=="F3") { Keyboard.press(KEYF3); Keyboard.releaseAll(); }
-        else if(Command=="F4") { Keyboard.press(KEYF4); Keyboard.releaseAll(); }
-        else if(Command=="F5") { Keyboard.press(KEYF5); Keyboard.releaseAll(); }
-        else if(Command=="F6") { Keyboard.press(KEYF6); Keyboard.releaseAll(); }
-        else if(Command=="F7") { Keyboard.press(KEYF7); Keyboard.releaseAll(); }
-        else if(Command=="F8") { Keyboard.press(KEYF8); Keyboard.releaseAll(); }
-        else if(Command=="F9") { Keyboard.press(KEYF9); Keyboard.releaseAll(); }
-        else if(Command=="F10") { Keyboard.press(KEYF10); Keyboard.releaseAll(); }
-        else if(Command=="F11") { Keyboard.press(KEYF11); Keyboard.releaseAll(); }
-        else if(Command=="F12") { Keyboard.press(KEYF12); Keyboard.releaseAll(); }
-        else if(Command=="TAB") { Keyboard.press(KEYTAB); Keyboard.releaseAll(); }
-	else if(Command=="DELETE") { Keyboard.press(KEYDELETE); Keyboard.releaseAll(); }
-	else { cmdFail++; }
-
-        //else if(Command=="SPACE") Keyboard.press(' '); //Supported on Flipper but not here, yet
-        //else if(Command=="APP") Keyboard.press(APP); //Supported on Flipper but not here, yet
-        //else if(Command=="SYSRQ") Keyboard.press(SYSRQ); //Supported on Flipper but not here, yet
-        Keyboard.releaseAll();
-
-        if(line==3) { DISP.setCursor(0, 0); DISP.fillScreen(BLACK); line=0; }
-	line++;
-        if(cmdFail==2) { DISP.setTextColor(RED); DISP.print(Command);DISP.println(" -> Not Supported"); delay(5000); } else { DISP.setTextColor(GREEN); DISP.println(Command); }
-        DISP.setTextColor(WHITE);
-        DISP.println(Argument);
-	      
-        if(Command!="REM") delay(DEF_DELAY); //if command is not a comment, wait DEF_DELAY until next command (100ms)
+		if(ArgIsCmd) Command = OldCmd.c_str(); // Recover the command to run in case of REPEAT
+	
+	        //else if(Command=="SPACE") Keyboard.press(' '); //Supported on Flipper but not here, yet
+	        //else if(Command=="APP") Keyboard.press(APP); //Supported on Flipper but not here, yet
+	        //else if(Command=="SYSRQ") Keyboard.press(SYSRQ); //Supported on Flipper but not here, yet
+	        Keyboard.releaseAll();
+	
+	        if(line==7) { DISP.setCursor(0, 0); DISP.fillScreen(BLACK); line=0; }
+		line++;
+	        if(cmdFail==2) { 
+			DISP.setTextColor(RED); 
+			DISP.print(Command);DISP.println(" -> Not Supported, running as STRINGLN"); 
+			if (Command != Argument) { Keyboard.print(Command); Keyboard.print(" "); Keyboard.println(Argument); }
+			else { Keyboard.println(Command); }
+		} else { DISP.setTextColor(GREEN); DISP.println(Command); }
+	        DISP.setTextColor(WHITE);
+	        DISP.println(Argument);
+		      
+	        if(Command!="REM") delay(DEF_DELAY); //if command is not a comment, wait DEF_DELAY until next command (100ms)
+	}
         
       }
       DISP.setTextSize(MEDIUM_TEXT);  
