@@ -223,7 +223,7 @@ void key_input(String bad_script = "/badpayload.txt")
 		Command = Command.c_str();
 		Argument = Argument.c_str();
 		ArgChar = Argument.charAt(0);
-		RepeatTmp="0";
+		RepeatTmp="1";
 	}
 	uint16_t i;
 	for(i=0; i < RepeatTmp.toInt(); i++) {
