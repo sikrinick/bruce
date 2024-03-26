@@ -188,30 +188,44 @@ void key_input(String bad_script = "/badpayload.txt")
       String Command = "";
       String Argument = "";
       char ArgChar;
+      bool ArgIsCmd; // Verifies if the Argument is DELETE, TAB or F1-F12
+      int cmdFail; // Verifies if the command is supported, mus pass through 2 if else statemens and summ 2 to not be supported
+      int line; // Shows 3 commands of the payload on screen to follow the execution
+	    
       Keyboard.releaseAll();
+      DISP.setTextSize(1);  
+      DISP.setCursor(0, 0); 
+      DISP.fillScreen(BLACK); 
+      line=0; 
+	    
       while (payloadFile.available()) {
         lineContent = payloadFile.readStringUntil('\n');
-        if(lineContent.indexOf(' ')>0) {
-          Command = lineContent.substring(0, lineContent.indexOf(' ')); // get the command
-          Argument = lineContent.substring(lineContent.indexOf(' ') + 1); // get the argument
-          ArgChar = Argument.charAt(0);
-        } else { Command = lineContent.c_str(); Argument = ""; }
+	ArgIsCmd = false;
+	cmdFail = 0;
+        Command = lineContent.substring(0, lineContent.indexOf(' ')); // get the command
+	Argument = lineContent.substring(lineContent.indexOf(' ') + 1); // get the argument
+ 	Command = Command.c_str();
+        Argument = Argument.c_str();
+        ArgChar = Argument.charAt(0);
+
+	if (Argument=="F1" || Argument=="F2" || Argument=="F3" || Argument=="F4" || Argument=="F5" || Argument=="F6" || Argument=="F7" || Argument=="F8" || Argument=="F9" || Argument=="F10" || Argument=="F11" || Argument=="F2" || Argument == "DELETE" || Argument == "TAB") { ArgIsCmd = true; }
         
         
         if(Command=="REM") { Serial.println(" // " + Argument); }
         else if(Command=="DELAY") delay(Argument.toInt());
         else if(Command=="DEFAULTDELAY" || Command=="DEFAULT_DELAY") delay(DEF_DELAY); //100ms
         else if(Command=="STRING") Keyboard.print(Argument); 
-        else if(Command=="ENTER") { Keyboard.press(KEYRETURN); }
-        else if(Command=="GUI" || Command=="WINDOWS") { Keyboard.press(KEYLEFT_GUI); Keyboard.press(ArgChar); Keyboard.releaseAll(); }
-        else if(Command=="SHIFT") { Keyboard.press(KEYLEFT_SHIFT); Keyboard.press(ArgChar); Keyboard.releaseAll(); }
-        else if(Command=="ALT") { Keyboard.press(KEYLEFT_ALT); Keyboard.press(ArgChar); Keyboard.releaseAll(); }
-        else if(Command=="CTRL" || Command=="CONTROL") { Keyboard.press(KEYLEFT_CTRL); Keyboard.press(ArgChar); Keyboard.releaseAll(); }
-        else if(Command=="CTRL-ALT") { Keyboard.press(KEYLEFT_ALT); Keyboard.press(KEYLEFT_CTRL); Keyboard.press(ArgChar); Keyboard.releaseAll(); }
-        else if(Command=="CTRL-SHIFT") { Keyboard.press(KEYLEFT_CTRL); Keyboard.press(KEYLEFT_SHIFT); Keyboard.press(ArgChar); Keyboard.releaseAll(); }
-        else if(Command=="ALT-SHIFT") { Keyboard.press(KEYLEFT_ALT); Keyboard.press(KEYLEFT_SHIFT); Keyboard.press(ArgChar); Keyboard.releaseAll(); }
-        else if(Command=="ALT-GUI") { Keyboard.press(KEYLEFT_ALT); Keyboard.press(KEYLEFT_GUI); Keyboard.press(ArgChar); Keyboard.releaseAll(); }
-        else if(Command=="GUI-SHIFT") { Keyboard.press(KEYLEFT_GUI); Keyboard.press(KEYLEFT_SHIFT); Keyboard.press(ArgChar); Keyboard.releaseAll(); }
+	else if(Command=="STRINGLN") Keyboard.println(Argument); // I Don't know if it works
+        else if(Command=="ENTER") { Keyboard.press(KEYRETURN); Keyboard.releaseAll(); }
+        else if(Command=="GUI" || Command=="WINDOWS") { Keyboard.press(KEYLEFT_GUI);			 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
+        else if(Command=="SHIFT") { Keyboard.press(KEYLEFT_SHIFT);					 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
+        else if(Command=="ALT") { Keyboard.press(KEYLEFT_ALT);						 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
+        else if(Command=="CTRL" || Command=="CONTROL") { Keyboard.press(KEYLEFT_CTRL);			 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
+        else if(Command=="CTRL-ALT") { Keyboard.press(KEYLEFT_ALT); Keyboard.press(KEYLEFT_CTRL);	 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
+        else if(Command=="CTRL-SHIFT") { Keyboard.press(KEYLEFT_CTRL); Keyboard.press(KEYLEFT_SHIFT);	 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
+        else if(Command=="ALT-SHIFT") { Keyboard.press(KEYLEFT_ALT); Keyboard.press(KEYLEFT_SHIFT);	 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
+        else if(Command=="ALT-GUI") { Keyboard.press(KEYLEFT_ALT); Keyboard.press(KEYLEFT_GUI);		 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
+        else if(Command=="GUI-SHIFT") { Keyboard.press(KEYLEFT_GUI); Keyboard.press(KEYLEFT_SHIFT);	 if(!ArgIsCmd) { Keyboard.press(ArgChar); Keyboard.releaseAll(); } else { Command = Argument.c_str(); } }
         else if(Command=="DOWNARROW") { Keyboard.press(KEYDOWN_ARROW); Keyboard.releaseAll(); }
         else if(Command=="DOWN") { Keyboard.press(KEYDOWN_ARROW); Keyboard.releaseAll(); }
         else if(Command=="LEFTARROW") { Keyboard.press(KEYLEFT_ARROW); Keyboard.releaseAll(); }
@@ -223,7 +237,6 @@ void key_input(String bad_script = "/badpayload.txt")
         else if(Command=="BREAK") { Keyboard.press(KEYPAUSE); Keyboard.releaseAll(); }
         else if(Command=="CAPSLOCK")  { Keyboard.press(KEYCAPS_LOCK); Keyboard.releaseAll(); }
         else if(Command=="PAUSE") { Keyboard.press(KEYPAUSE); Keyboard.releaseAll(); }
-        else if(Command=="DELETE") { Keyboard.press(KEYDELETE); Keyboard.releaseAll(); }
         else if(Command=="BACKSPACE") { Keyboard.press(KEYBACKSPACE); Keyboard.releaseAll(); }
         else if(Command=="END") { Keyboard.press(KEYEND); Keyboard.releaseAll(); }
         else if(Command=="ESC" || Command=="ESCAPE") { Keyboard.press(KEYESC); Keyboard.releaseAll(); }
@@ -234,9 +247,10 @@ void key_input(String bad_script = "/badpayload.txt")
         else if(Command=="PAGEDOWN") { Keyboard.press(KEYPAGE_DOWN); Keyboard.releaseAll(); }
         else if(Command=="PRINTSCREEN") { Keyboard.press(KEYPRINT_SCREEN); Keyboard.releaseAll(); }
         else if(Command=="SCROLLOCK") { Keyboard.press(KEYSCROLL_LOCK); Keyboard.releaseAll(); }
-        else if(Command=="TAB") { Keyboard.press(KEYTAB); Keyboard.releaseAll(); }
         else if(Command=="MENU") { Keyboard.press(KEYMENU); Keyboard.releaseAll(); }
-        else if(Command=="F1") { Keyboard.press(KEYF1); Keyboard.releaseAll(); }
+	else { cmdFail++; }
+
+        if(Command=="F1") { Keyboard.press(KEYF1); Keyboard.releaseAll(); }
         else if(Command=="F2") { Keyboard.press(KEYF2); Keyboard.releaseAll(); }
         else if(Command=="F3") { Keyboard.press(KEYF3); Keyboard.releaseAll(); }
         else if(Command=="F4") { Keyboard.press(KEYF4); Keyboard.releaseAll(); }
@@ -248,23 +262,25 @@ void key_input(String bad_script = "/badpayload.txt")
         else if(Command=="F10") { Keyboard.press(KEYF10); Keyboard.releaseAll(); }
         else if(Command=="F11") { Keyboard.press(KEYF11); Keyboard.releaseAll(); }
         else if(Command=="F12") { Keyboard.press(KEYF12); Keyboard.releaseAll(); }
-        else Serial.println("Command:" + Command + " not suported");
+        else if(Command=="TAB") { Keyboard.press(KEYTAB); Keyboard.releaseAll(); }
+	else if(Command=="DELETE") { Keyboard.press(KEYDELETE); Keyboard.releaseAll(); }
+	else { cmdFail++; }
 
         //else if(Command=="SPACE") Keyboard.press(' '); //Supported on Flipper but not here, yet
         //else if(Command=="APP") Keyboard.press(APP); //Supported on Flipper but not here, yet
         //else if(Command=="SYSRQ") Keyboard.press(SYSRQ); //Supported on Flipper but not here, yet
         Keyboard.releaseAll();
 
-        DISP.setCursor(0, 0);
-        DISP.fillScreen(BLACK);
-        DISP.setTextColor(GREEN);
-        DISP.println(Command);
+        if(line==3) { DISP.setCursor(0, 0); DISP.fillScreen(BLACK); line=0; }
+	line++;
+        if(cmdFail==2) { DISP.setTextColor(RED); DISP.print(Command);DISP.println(" -> Not Supported"); delay(5000); } else { DISP.setTextColor(GREEN); DISP.println(Command); }
         DISP.setTextColor(WHITE);
         DISP.println(Argument);
-
+	      
         if(Command!="REM") delay(DEF_DELAY); //if command is not a comment, wait DEF_DELAY until next command (100ms)
         
       }
+      DISP.setTextSize(MEDIUM_TEXT);  
       payloadFile.close();
       Serial.println("Finished badusb payload execution...");
     }
