@@ -306,9 +306,8 @@ struct QRCODE {
 
 QRCODE qrcodes[] = {
   { "Back", "" },
-  { "Rickroll", "https://youtu.be/dQw4w9WgXcQ"},
-  { "HackerTyper", "https://hackertyper.net/"},
-  { "ZomboCom", "https://html5zombo.com/"},
+  { "Boitatech", "https://discord.gg/boitatech"},
+  { "hackingtroop", "https://discord.gg/672DkENvf4/"},
 };
 
 
@@ -2785,7 +2784,7 @@ void setup() {
       EEPROM.write(1, 15);   // 15 second auto dim time
       EEPROM.write(2, 100);  // 100% brightness
       EEPROM.write(3, 0);    // TVBG NA Region
-      EEPROM.write(4, 11);   // FGColor Green
+      EEPROM.write(4, 6);   // FGColor Purple c:<
       EEPROM.write(5, 1);    // BGcolor Black
       EEPROM.commit();
     }
