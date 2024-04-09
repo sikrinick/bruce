@@ -1,7 +1,7 @@
 # M5-Bruce
 Firmware for offensive pranks to Cardputer
 
-![Bruce](https://github.com/pr3y/m5-bruce/blob/main/pic4.png) ~thx Luidiblu for the image
+![Bruce](https://github.com/pr3y/m5-bruce/blob/main/media/pic4.png) ~thx Luidiblu for the image
 
 ## Name and Background
 Forked project, same intentions B)
@@ -10,11 +10,11 @@ NEMO is named after the small, clever and stubborn fish in Finding Nemo. This pr
 
 Hello, my name is Bruce.
 
-![M5Cardputer](https://github.com/pr3y/m5-bruce/blob/main/pic1.png)
+![M5Cardputer](https://github.com/pr3y/m5-bruce/blob/main/media/pic1.png)
 
-![M5Cardputer Main Screen](https://github.com/pr3y/m5-bruce/blob/main/pic2.png)
+![M5Cardputer Main Screen](https://github.com/pr3y/m5-bruce/blob/main/media/pic2.png)
 
-![M5Cardputer Wifi Attacks](https://github.com/pr3y/m5-bruce/blob/main/pic3.png)
+![M5Cardputer Wifi Attacks](https://github.com/pr3y/m5-bruce/blob/main/media/pic3.png)
 
 ## Features
 * [TV B-Gone](http://www.righto.com/2010/11/improved-arduino-tv-b-gone.html) port (thanks to MrArm's [HAKRWATCH](https://github.com/MrARM/hakrwatch)) to shut off many infrared-controlled TVs, projectors and other devices

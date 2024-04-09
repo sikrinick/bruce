@@ -210,6 +210,7 @@ uint16_t FGCOLOR=0x0006; // placeholder
 // 32 - Wireguard Tunnel
 // 33 - Select Keyboard Menu
 // 34 - Bluetooth Keyboard
+// 35 - Openhaystack
 // .. - ..
 // 97 - Mount/UnMount SD Card on M5Stick devices, if SDCARD is declared
 
@@ -286,6 +287,7 @@ bool clone_flg = false;
 #include "clients.h"
 #include "usb.h"
 #include "wg.h"
+#include "openhaystack.h"
 #include "arp.h"
 #include <BLEUtils.h>
 #include <BLEServer.h>
@@ -448,6 +450,7 @@ MENU mmenu[] = {
   { "BadUSB", 27},
   { "Keyboard", 33},
   { "Microphone", 25},
+  { "Openhaystack", 35},
   { "Settings", 2},
 };
 int mmenu_size = sizeof(mmenu) / sizeof(MENU);
@@ -578,7 +581,6 @@ void dmenu_loop() {
 /// KEYBOARD MENU ///
 MENU kbsmenu[] = {
   { "USB", 29},
-  { "BLE", 34},
 };
 int kbsmenu_size = sizeof(kbsmenu) / sizeof(MENU);
 
@@ -3029,8 +3031,12 @@ void loop() {
           kbsmenu_setup();
           break;
         case 34:
-          ble_setup();
+          //ble_setup();
           break;
+	case 35:
+	  openhaystack_setup();
+	  break;
+
 
     }
   }
@@ -3161,8 +3167,11 @@ void loop() {
         kbsmenu_loop();
         break;
       case 34:
-        ble_loop();
+       // ble_loop();
         break;
+      case 35:
+      	openhaystack_loop();
+	break;
     #endif                                                             // SDCARD M5Stick
   }
 }
