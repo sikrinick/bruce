@@ -1,5 +1,11 @@
-// Nemo Firmware for the M5 Stack Stick C Plus
-// github.com/n0xa | IG: @4x0nn
+/*
+Bruce Firmware for the M5 Stack Carputer
+github.com/pr3y
+
+Forked from
+Nemo Firmware for the M5 Stack Stick C Plus
+github.com/n0xa | IG: @4x0nn
+*/
 
 // -=-=-=-=-=-=- Uncomment the platform you're building for -=-=-=-=-=-=-
 // #define STICK_C_PLUS
@@ -17,7 +23,7 @@ uint16_t BGCOLOR=0x0001; // placeholder
 uint16_t FGCOLOR=0x0006; // placeholder
 
 #ifndef BRUCE_VERSION
-  #define BRUCE_VERSION "0.7"
+  #define BRUCE_VERSION "0.8"
 #endif
 
 #if !defined(CARDPUTER) && !defined(STICK_C_PLUS2) && !defined(STICK_C_PLUS) && !defined(STICK_C)
