@@ -29,10 +29,11 @@ Hello, my name is Bruce.
 * TELNET Client
 * DPWO-ESP32
 * Raw Sniffer - Saves PCAP to SD
-* BadUSB - Reads payload on SD card /badpayload.txt
+* BadUSB - Reads payloads on SD card and interprets DuckyScript
 * Wireguard Tunneling - Reads config file on SD card /wg.conf
 * Keyboard - Use as a keyboard USB input
 * ARP Scan - Make it better on next version and print as a menu
+* Openhaystack - Track your device like an airtag (thx to viniciuspereiras 4 testing)
 
 ## User Interface
 There are three main controls:
@@ -61,16 +62,24 @@ In EVIL Portal mode, BRUCE reads the keyboard input for the SSID and activates a
 * EVIL Portal is only for use on professional engagements with a valid scope of work, educational or demonstration purposes. Storage, sale, or use of personal information without consent is against the law. 🤓
 
 ## BadUSB
-**The content of the file isn`t supposed to be parsed like flipper!**
+**NOW BRUCE PARSE PAYLOADS LIKE FLIPPER!!**
 
-To choose a payload for the BadUSB on Cardputer instead of getting rickrolled, you need to create a file on the SD card root directory called "badpayload.txt".
-This will be the raw payload that will be sent when the Cardputer is connected via USB cable.
+Now only DuckyScript payloads are supported!! for more info on creating your own DuckyScripts [read here](https://docs.hak5.org/hak5-usb-rubber-ducky/ducky-script-basics/hello-world)
 
-By default, when you press the BadUSB option, it will send a Win + R key input and paste your payload, the content on the .txt file **can be a powershell one-liner**.
+To choose a payload for the BadUSB on Cardputer instead of getting rickrolled, you need to create a file on the SD card root directory ending with ".txt".
+You can then select which payload that will be sent when the Cardputer is connected via USB cable.
 
 ## Wireguard
 To be able to connect to a wireguard tunnel with your cardputer easily, you need to have your .conf file and place on the SD card root directory called "wg.conf".
 
+## Openhaystack
+Now its possible to use the cardputer as a AirTag! thanks to [Openhaystack](https://github.com/seemoo-lab/openhaystack).
+
+To make it work, you should get your Public key encoded with base64 and save it on a file on the SD root called "pub.key".
+To create pub.key file you should run this in bash:
+```sh
+base64 -d <<< "your_base64_public_key"|tee pub.key
+```
 
 ## Install from M5Burner
 This is the absolute easiest way to get BRUCE
@@ -152,3 +161,5 @@ https://github.com/n0xa/m5stick-nemo
 https://github.com/m5stack/M5Cardputer
 
 https://github.com/caioluders/DPWO
+
+https://github.com/seemoo-lab/openhaystack/tree/main/Firmware/ESP32
