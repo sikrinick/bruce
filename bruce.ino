@@ -2952,7 +2952,7 @@ void loop() {
           DISP.setTextSize(TINY_TEXT);
           DISP.setCursor(0, 0);
           DISP.printf("DPWO-ESP32!     Scanning...\n");
-          dpwoSetup();
+          dpwo_setup();
           break;
         case 27:
           usb_setup();
@@ -3143,7 +3143,7 @@ void loop() {
         mic_loop();
         break;
       case 26:
-        dpwoLoop();
+        dpwo_loop();
         break;                                                    // SDCARD M5Stick
       case 27:
         usb_loop();
