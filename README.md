@@ -119,6 +119,7 @@ If you want to customize BRUCE or contribute to the project, you should be famil
   * The code should compile cleanly and work on an M5Stick C Plus out of the box from the master branch or a release tag.
   * Uncomment only the one appropriate `#define` option or compiler errors will occur. 
   * If for some reason the screen jumps from very dim at level 0 to almost fully bright at level 1 and further brightness levels don't affect anything, set the pct_brightness variable to false.
+  * You cannot send the deauth packet by default, so you have to [follow this instructions to get the deauth prerequisites](https://github.com/bmorcelli/m5stick-nemo/tree/main/deauth_prerequisites) and patch your platform.txt
 * Compile and upload the project
 
 ## Troubleshooting
