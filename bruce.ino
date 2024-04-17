@@ -23,7 +23,7 @@ uint16_t BGCOLOR=0x0001; // placeholder
 uint16_t FGCOLOR=0x0006; // placeholder
 
 #ifndef BRUCE_VERSION
-  #define BRUCE_VERSION "0.8"
+  #define BRUCE_VERSION "0.9"
 #endif
 
 #if !defined(CARDPUTER) && !defined(STICK_C_PLUS2) && !defined(STICK_C_PLUS) && !defined(STICK_C)
@@ -217,6 +217,7 @@ uint16_t FGCOLOR=0x0006; // placeholder
 // 33 - Select Keyboard Menu
 // 34 - Bluetooth Keyboard
 // 35 - Openhaystack
+// 36 - RFID2 - IncursioHack
 // .. - ..
 // 97 - Mount/UnMount SD Card on M5Stick devices, if SDCARD is declared
 
@@ -234,7 +235,8 @@ const String contributors[] PROGMEM = {
   "@niximkk",
   "@unagironin",
   "@vladimirpetrov",
-  "@vs4vijay"
+  "@vs4vijay",
+  "@incursiohack"
 };
 
 int advtime = 0; 
@@ -297,6 +299,9 @@ bool clone_flg = false;
 #include "arp.h"
 #include <BLEUtils.h>
 #include <BLEServer.h>
+#include "MFRC522_I2C.h" // RFID2 M5Stack - IncursioHack
+#include <Wire.h> // RFID2 M5Stack - IncursioHack
+
 #if defined(DEAUTHER)
   #include "deauth.h"                                                               //DEAUTH
   #include "esp_wifi.h"                                                             //DEAUTH
@@ -316,8 +321,22 @@ QRCODE qrcodes[] = {
   { "Back", "" },
   { "Boitatech", "https://discord.gg/boitatech"},
   { "hackingtroop", "https://discord.gg/672DkENvf4/"},
+  { "IncursioHack", "https://github.com/IncursioHack"},
 };
 
+// -+-+-+-+ RFID START-+-+-+-+
+MFRC522 mfrc522(0x28); // Create MFRC522 instance.
+
+enum state {
+  read_mode,
+  write_mode
+} currentState;
+
+bool readUID = false;
+
+byte UID[20];
+uint8_t UIDLength = 0;
+// -+-+-+-+ RFID END-+-+-+-+
 
 void drawmenu(MENU thismenu[], int size) {
   DISP.setTextSize(SMALL_TEXT);
@@ -457,6 +476,7 @@ MENU mmenu[] = {
   { "Keyboard", 33},
   { "Microphone", 25},
   { "Openhaystack", 35},
+  { "NFC / RFID", 36},  
   { "Settings", 2},
 };
 int mmenu_size = sizeof(mmenu) / sizeof(MENU);
@@ -2841,6 +2861,163 @@ void setup() {
   bootScreen();
 }
 
+// -+-+-+-+ IncursioHack RFID START -+-+-+-+
+void displayReadMode() {
+  DISP.setTextColor(RED);
+  DISP.setTextSize(SMALL_TEXT);
+  DISP.println(F("  RFID2 I2C MFRC522"));
+  DISP.println("");
+  DISP.setTextColor(BLUE);
+  DISP.setTextSize(TINY_TEXT); // Reduce text size
+  DISP.println(String(TXT_RFID_PRESSBTN_WRITE));
+  DISP.setTextSize(TINY_TEXT); // Reduce text size
+  DISP.println(String(TXT_RFID_READY_READ));
+  DISP.println("");
+  DISP.setTextColor(FGCOLOR, BGCOLOR);
+}
+
+void displayWriteMode() {
+  DISP.setTextColor(RED);
+  DISP.setTextSize(SMALL_TEXT);
+  DISP.println(F("  RFID2 I2C MFRC522"));
+  DISP.println("");
+  DISP.setTextColor(BLUE);
+  DISP.setTextSize(TINY_TEXT); // Reduce text size
+  DISP.println(String(TXT_RFID_PRESSBTN_READ));
+  DISP.setTextSize(TINY_TEXT); // Reduce text size
+  DISP.println(String(TXT_RFID_READY_WRITE));
+  DISP.println("");
+  DISP.setTextColor(FGCOLOR, BGCOLOR);
+  displayUID();
+
+}
+
+void cls() {
+  DISP.setTextColor(FGCOLOR, BGCOLOR);
+  DISP.setTextSize(SMALL_TEXT); // Reduce text size
+  DISP.fillScreen(BLACK);
+  DISP.setCursor(0, 0);
+}
+
+
+void rfid_setup() {
+  DISP.fillScreen(BLACK);
+  DISP.setTextSize(MEDIUM_TEXT);
+  DISP.setCursor(5, 1);
+  DISP.println("RFID");
+  DISP.setTextSize(SMALL_TEXT);
+  Serial.begin(115200);
+  Wire.begin();
+  mfrc522.PCD_Init();
+  currentState = read_mode;
+  displayReadMode();
+  delay(1000);
+}
+
+void rfid_loop()
+{
+  M5.update();
+
+  if (M5Cardputer.Keyboard.isKeyPressed(KEY_ENTER) && readUID) {
+    cls();
+    switch (currentState) {
+      case read_mode:
+        currentState = write_mode;
+        displayWriteMode();
+        break;
+      case write_mode:
+        currentState = read_mode;
+        displayReadMode();
+        readUID = false;
+        break;
+    }
+  }
+
+  if (!mfrc522.PICC_IsNewCardPresent())
+    return;
+  if (!mfrc522.PICC_ReadCardSerial())
+    return;
+
+  cls();
+
+  switch (currentState) {
+    case read_mode:
+      displayReadMode();
+      readCard();
+      break;
+    case write_mode:
+      displayWriteMode();
+      writeCard();
+      break;
+  }
+
+  mfrc522.PICC_HaltA();
+}
+
+void readCard() {
+  MFRC522::PICC_Type piccType = (MFRC522::PICC_Type)mfrc522.PICC_GetType(mfrc522.uid.sak);
+  DISP.setTextSize(SMALL_TEXT); // Reduce text size
+  DISP.print(F(""));
+  DISP.print(mfrc522.PICC_GetTypeName(piccType));
+  DISP.setTextSize(SMALL_TEXT); // Reduce text size
+  DISP.print(F(" (SAK "));
+  DISP.print(mfrc522.uid.sak);
+  DISP.print(")\r\n");
+  if (piccType != MFRC522::PICC_TYPE_MIFARE_MINI &&
+      piccType != MFRC522::PICC_TYPE_MIFARE_1K &&
+      piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
+    DISP.setTextColor(RED);
+    DISP.setTextSize(SMALL_TEXT); // Reduce text size
+    DISP.setCursor(0, 80); // Move the error message down
+    DISP.println(String(TXT_RFID_NOTMIFARE));
+    DISP.setCursor(0, 0); // Reset cursor
+    DISP.setTextColor(FGCOLOR, BGCOLOR);
+//    beep_error();
+    delay(1000);
+  } else {
+    DISP.println("");
+    readUID = true;
+    UIDLength = mfrc522.uid.size;
+    for (byte i = 0; i < UIDLength; i++) {
+      UID[i] = mfrc522.uid.uidByte[i];
+    }
+    Serial.println();
+    displayUID();
+    delay(1000);
+  }
+}
+
+void displayUID() {
+  DISP.setTextSize(SMALL_TEXT); // Reduce text size
+  DISP.println(F("User ID:"));
+  DISP.setTextSize(SMALL_TEXT); // Reduce text size
+  for (byte i = 0; i < UIDLength; i++) {
+    DISP.print(UID[i] < 0x10 ? " 0" : " ");
+    DISP.print(UID[i], HEX);
+  }
+}
+
+void writeCard() {
+  if (mfrc522.MIFARE_SetUid(UID, (byte)UIDLength, true)) {
+    DISP.println();
+    DISP.setTextSize(SMALL_TEXT); // Reduce text size
+    DISP.println(String(TXT_RFID_WRITE));
+    DISP.setTextSize(SMALL_TEXT); // Reduce text size
+    DISP.println();
+  } else {
+    DISP.setTextColor(RED);
+    DISP.setTextSize(SMALL_TEXT); // Reduce text size
+    DISP.println();
+    DISP.println(String(TXT_RFID_FAIL));
+    DISP.setTextSize(SMALL_TEXT); // Reduce text size
+    DISP.setTextColor(FGCOLOR, BGCOLOR);
+  }
+
+  mfrc522.PICC_HaltA();
+  delay(1000);
+}
+// -+-+-+-+ RFID END IncursioHack-+-+-+-+
+
 void loop() {
   // This is the code to handle running the main loops
   // Background processes
@@ -2980,6 +3157,7 @@ void loop() {
           waitForInput(ssid_scan);
           DISP.print("WIFI Password: \n");
           waitForInput(password_scan);
+        
 
           // Connect to WiFi
           WiFi.begin(ssid_scan, password_scan.c_str());
@@ -3042,6 +3220,9 @@ void loop() {
 	case 35:
 	  openhaystack_setup();
 	  break;
+        case 36: //RFID
+        rfid_setup(); //RFID
+        break; //RFID
 
 
     }
@@ -3177,6 +3358,9 @@ void loop() {
         break;
       case 35:
       	openhaystack_loop();
+      case 36:
+        rfid_loop(); //RFID
+        break; //RFID
 	break;
     #endif                                                             // SDCARD M5Stick
   }
