@@ -80,6 +80,17 @@ To create pub.key file you should run this in bash:
 ```sh
 base64 -d <<< "your_base64_public_key"|tee pub.key
 ```
+## NFC / RFID
+It is now possible to use the M5Stack RFID2 (WS1850S) to read and write Mifare Classic cards and tags. From what we investigated, this device does not allow emulation, so we recommend that you use an adhesive NFC tag on your Cardputer.
+New functions involving NFC will be developed in the coming seasons.
+
+To use, simply access the NFC / RFID menu, approach the card to which it will be read, press "ENTER" and approach the card to which it will be written. To exit, press "ESC".
+Languages ​​in English and Brazilian Portuguese and some error messages were inserted.
+
+By: @IncursioHack
+
+![NFC](https://github.com/pr3y/m5-bruce/blob/main/media/nfc.gif)
+![NFC](https://github.com/IncursioHack/bruce-incursio/blob/main/media/nfc.gif)
 
 ## Install from M5Burner
 This is the absolute easiest way to get BRUCE
@@ -148,7 +159,7 @@ Things I'd like help on:
 * SMB client
 * Simple network scan (Already with ARP scan but results of it should be a menu, being able to select hosts and check ports)
 * Bluetooth Keyboard
-* Adding support for RFID and other m5-stack modules such as ethernet cable
+* Adding support for RFID (IncursioHack) and other m5-stack modules such as ethernet cable
 
 Things I probably won't merge in:
 * Bulk wifi deauthentication spamming

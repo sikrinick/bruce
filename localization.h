@@ -96,6 +96,14 @@
   #define TXT_SET_FGCOLOR "MAIN COLOR"
   #define TXT_SET_BGCOLOR "BACKGROUND COLOR"
   #define TXT_THEME "Color Theme"
+  #define TXT_RFID_WRITE "Wrote the UID."
+  #define TXT_RFID_FAIL "Writing FAILED."
+  #define TXT_RFID_NOTMIFARE "ITS NOT MIFARE CLASSIC."
+  #define TXT_RFID_PRESSBTN_WRITE "Press 'ENTER' to write after reading."
+  #define TXT_RFID_PRESSBTN_READ "Press 'ENTER' to read a new card."
+  #define TXT_RFID_READY_WRITE "Ready to write."
+  #define TXT_RFID_READY_READ "Ready to read."
+
 #endif
 
 #if defined(LANGUAGE_PT_BR)
@@ -196,4 +204,11 @@
   #define TXT_SET_FGCOLOR "COR PRINCIPAL"
   #define TXT_SET_BGCOLOR "COR DE FUNDO"
   #define TXT_THEME "Tema De Cores"
+  #define TXT_RFID_WRITE "Escreveu UID."
+  #define TXT_RFID_FAIL "Escrita FALHOU."
+  #define TXT_RFID_NOTMIFARE "NAO EH MIFARE CLASSIC."
+  #define TXT_RFID_PRESSBTN_WRITE "Pressione 'ENTER' para escrever depois de ler."
+  #define TXT_RFID_PRESSBTN_READ "Pressione 'ENTER' para ler um novo cartao."
+  #define TXT_RFID_READY_WRITE "Pronto para escrever."
+  #define TXT_RFID_READY_READ "Pronto para ler."  
 #endif
