@@ -90,7 +90,6 @@ Languages ​​in English and Brazilian Portuguese and some error messages were
 By: @IncursioHack
 
 ![NFC](https://github.com/pr3y/m5-bruce/blob/main/media/nfc.gif)
-![NFC](https://github.com/IncursioHack/bruce-incursio/blob/main/media/nfc.gif)
 
 ## Install from M5Burner
 This is the absolute easiest way to get BRUCE
