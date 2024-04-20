@@ -7,6 +7,8 @@ Nemo Firmware for the M5 Stack Stick C Plus
 github.com/n0xa | IG: @4x0nn
 */
 
+#include <Arduino.h>
+
 // -=-=-=-=-=-=- Uncomment the platform you're building for -=-=-=-=-=-=-
 // #define STICK_C_PLUS
 // #define STICK_C_PLUS2
@@ -35,7 +37,7 @@ uint16_t FGCOLOR=0x0006; // placeholder
 #endif
 
 // -=-=- DEAUTHER -=-  @bmorcelli -=-=- | Discord: Pirata#5263 bmorcelli
-#define DEAUTHER  //Need to make some changes in arduino IDE, refer to https://github.com/bmorcelli/m5stickC_Plus2-nemo/tree/main/DEAUTH%20Prerequisites
+// #define DEAUTHER  //Need to make some changes in arduino IDE, refer to https://github.com/bmorcelli/m5stickC_Plus2-nemo/tree/main/DEAUTH%20Prerequisites
 
 
 #if defined(STICK_C_PLUS)
@@ -282,7 +284,7 @@ bool clone_flg = false;
 #include "applejuice.h"
 #include "WORLD_IR_CODES.h"
 //#include "wifispam.h"
-#include "sd.h"
+#include "sds.h"
 #include "portal.h"
 #include "BRUCEMatrix.h"
 //#include "songs.h"
@@ -293,7 +295,7 @@ bool clone_flg = false;
 #include "dpwo.h"
 #include "sniffer.h"
 #include "clients.h"
-#include "usb.h"
+#include "usbs.h"
 #include "wg.h"
 #include "openhaystack.h"
 #include "arp.h"
@@ -391,6 +393,8 @@ void number_drawmenu(int nums) {
   }
 }
 
+bool check_next_press();
+
 void switcher_button_proc() {
   if (rstOverride == false) {
     if (check_next_press()) {
@@ -399,6 +403,8 @@ void switcher_button_proc() {
     }
   }
 }
+
+void dimtimer();
 
 // Tap the power button from pretty much anywhere to get to the main menu
 void check_menu_press() {
@@ -1196,6 +1202,8 @@ void tvbgone_setup() {
   DISP.println(TXT_SEL_EXIT);
   delay(1000);
 }
+
+void sendAllCodes();
 
 void tvbgone_loop()
 {
@@ -2211,6 +2219,7 @@ void wscan_result_loop(){
    if(check_select_press()){
       apMac=WiFi.BSSIDstr(cursor);
       apSsidName=WiFi.SSID(cursor);
+      #if defined(DEAUTHER)
       channel = static_cast<uint8_t>(WiFi.channel(cursor));                            // DEAUTH - save channel
       uint8_t* bssid = WiFi.BSSID(cursor);                                             // DEAUTH - save BSSID (AP MAC)
       memcpy(ap_record.bssid, bssid, 6);                                               // DEAUTH - cpy bssid to memory
@@ -2218,6 +2227,7 @@ void wscan_result_loop(){
       current_proc = 20;
       isSwitching = true;
       delay(100);
+      #endif
     }
   }
 }
@@ -2862,6 +2872,16 @@ void setup() {
 }
 
 // -+-+-+-+ IncursioHack RFID START -+-+-+-+
+void displayUID() {
+  DISP.setTextSize(SMALL_TEXT); // Reduce text size
+  DISP.println(F("User ID:"));
+  DISP.setTextSize(SMALL_TEXT); // Reduce text size
+  for (byte i = 0; i < UIDLength; i++) {
+    DISP.print(UID[i] < 0x10 ? " 0" : " ");
+    DISP.print(UID[i], HEX);
+  }
+}
+
 void displayReadMode() {
   DISP.setTextColor(RED);
   DISP.setTextSize(SMALL_TEXT);
@@ -2899,6 +2919,58 @@ void cls() {
   DISP.setCursor(0, 0);
 }
 
+void readCard() {
+  MFRC522::PICC_Type piccType = (MFRC522::PICC_Type)mfrc522.PICC_GetType(mfrc522.uid.sak);
+  DISP.setTextSize(SMALL_TEXT); // Reduce text size
+  DISP.print(F(""));
+  DISP.print(mfrc522.PICC_GetTypeName(piccType));
+  DISP.setTextSize(SMALL_TEXT); // Reduce text size
+  DISP.print(F(" (SAK "));
+  DISP.print(mfrc522.uid.sak);
+  DISP.print(")\r\n");
+  if (piccType != MFRC522::PICC_TYPE_MIFARE_MINI &&
+      piccType != MFRC522::PICC_TYPE_MIFARE_1K &&
+      piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
+    DISP.setTextColor(RED);
+    DISP.setTextSize(SMALL_TEXT); // Reduce text size
+    DISP.setCursor(0, 80); // Move the error message down
+    DISP.println(String(TXT_RFID_NOTMIFARE));
+    DISP.setCursor(0, 0); // Reset cursor
+    DISP.setTextColor(FGCOLOR, BGCOLOR);
+//    beep_error();
+    delay(1000);
+  } else {
+    DISP.println("");
+    readUID = true;
+    UIDLength = mfrc522.uid.size;
+    for (byte i = 0; i < UIDLength; i++) {
+      UID[i] = mfrc522.uid.uidByte[i];
+    }
+    Serial.println();
+    displayUID();
+    delay(1000);
+  }
+}
+
+void writeCard() {
+  if (mfrc522.MIFARE_SetUid(UID, (byte)UIDLength, true)) {
+    DISP.println();
+    DISP.setTextSize(SMALL_TEXT); // Reduce text size
+    DISP.println(String(TXT_RFID_WRITE));
+    DISP.setTextSize(SMALL_TEXT); // Reduce text size
+    DISP.println();
+  } else {
+    DISP.setTextColor(RED);
+    DISP.setTextSize(SMALL_TEXT); // Reduce text size
+    DISP.println();
+    DISP.println(String(TXT_RFID_FAIL));
+    DISP.setTextSize(SMALL_TEXT); // Reduce text size
+    DISP.setTextColor(FGCOLOR, BGCOLOR);
+  }
+
+  mfrc522.PICC_HaltA();
+  delay(1000);
+}
 
 void rfid_setup() {
   DISP.fillScreen(BLACK);
@@ -2956,68 +3028,6 @@ void rfid_loop()
   mfrc522.PICC_HaltA();
 }
 
-void readCard() {
-  MFRC522::PICC_Type piccType = (MFRC522::PICC_Type)mfrc522.PICC_GetType(mfrc522.uid.sak);
-  DISP.setTextSize(SMALL_TEXT); // Reduce text size
-  DISP.print(F(""));
-  DISP.print(mfrc522.PICC_GetTypeName(piccType));
-  DISP.setTextSize(SMALL_TEXT); // Reduce text size
-  DISP.print(F(" (SAK "));
-  DISP.print(mfrc522.uid.sak);
-  DISP.print(")\r\n");
-  if (piccType != MFRC522::PICC_TYPE_MIFARE_MINI &&
-      piccType != MFRC522::PICC_TYPE_MIFARE_1K &&
-      piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
-    DISP.setTextColor(RED);
-    DISP.setTextSize(SMALL_TEXT); // Reduce text size
-    DISP.setCursor(0, 80); // Move the error message down
-    DISP.println(String(TXT_RFID_NOTMIFARE));
-    DISP.setCursor(0, 0); // Reset cursor
-    DISP.setTextColor(FGCOLOR, BGCOLOR);
-//    beep_error();
-    delay(1000);
-  } else {
-    DISP.println("");
-    readUID = true;
-    UIDLength = mfrc522.uid.size;
-    for (byte i = 0; i < UIDLength; i++) {
-      UID[i] = mfrc522.uid.uidByte[i];
-    }
-    Serial.println();
-    displayUID();
-    delay(1000);
-  }
-}
-
-void displayUID() {
-  DISP.setTextSize(SMALL_TEXT); // Reduce text size
-  DISP.println(F("User ID:"));
-  DISP.setTextSize(SMALL_TEXT); // Reduce text size
-  for (byte i = 0; i < UIDLength; i++) {
-    DISP.print(UID[i] < 0x10 ? " 0" : " ");
-    DISP.print(UID[i], HEX);
-  }
-}
-
-void writeCard() {
-  if (mfrc522.MIFARE_SetUid(UID, (byte)UIDLength, true)) {
-    DISP.println();
-    DISP.setTextSize(SMALL_TEXT); // Reduce text size
-    DISP.println(String(TXT_RFID_WRITE));
-    DISP.setTextSize(SMALL_TEXT); // Reduce text size
-    DISP.println();
-  } else {
-    DISP.setTextColor(RED);
-    DISP.setTextSize(SMALL_TEXT); // Reduce text size
-    DISP.println();
-    DISP.println(String(TXT_RFID_FAIL));
-    DISP.setTextSize(SMALL_TEXT); // Reduce text size
-    DISP.setTextColor(FGCOLOR, BGCOLOR);
-  }
-
-  mfrc522.PICC_HaltA();
-  delay(1000);
-}
 // -+-+-+-+ RFID END IncursioHack-+-+-+-+
 
 void loop() {

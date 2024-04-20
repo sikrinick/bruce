@@ -109,22 +109,9 @@ This is the absolute easiest way to get BRUCE
 
 ## Building from Source
 If you want to customize BRUCE or contribute to the project, you should be familiar with building BRUCE from source.
-* Install Arduino IDE. I've used Arduino 1.8 on Linux and Windows, and Arduino 2.2 on Windows successfully.
-* Install the M5Stack boards for Arduino IDE: In File -> Preferences, paste this URL into the "Boards Manager URLs" text box. Use commas between URLs if there are already URLs present.  https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
-* If M5Stack -> M5Stick-C-Plus doesn't show up under Tools -> Boards, then use Tools -> Boards -> Boards Manager and search for M5Stack. This will install support for most of the M5Stack boards including the Stick C Plus.
-* Ensure the correct device model (e.g. M5Stick-C, M5Stick-C-Plus or M5Cardputer) is selected in the boards menu.
-* Install necessary libraries. In Sketch -> Include Library -> Library Manager, search for and install the following libraries and any dependencies they require:
-  * M5StickCPlus, M5StickC or M5Cardputer
-  * IRRemoteESP8266
-  * Keyboard
-  * AsyncTCP
-  * LibSSH-ESP32
-  * Regexp
-  * Time
-  * WireGuard-ESP32
-  * lwIP
+* Install VS Code + PlatformIO plugin.
 * Un-comment the appropriate `#define` line near the top for your platform (STICK_C, STICK_C_PLUS or CARDPUTER)
-* Switch partition schemes. `Tools` -> `Partition Scheme` -> `No OTA (Large APP)` - sometimes this option is labeled `Huge APP` 
+* Probably, you would need to add boards and libraries with `pio install`
 * Configuration
   * The code should compile cleanly and work on an M5Stick C Plus out of the box from the master branch or a release tag.
   * Uncomment only the one appropriate `#define` option or compiler errors will occur. 
@@ -133,7 +120,7 @@ If you want to customize BRUCE or contribute to the project, you should be famil
 * Compile and upload the project
 
 ## Troubleshooting
-* Several features output debugging information to the serial monitor. Use the Serial Monitor feature in Arduino IDE or M5Burner to gather this information. It may have useful hints. When filing a bug report, it often helps to include serial monitor output.
+* Several features output debugging information to the serial monitor. Use the Serial Monitor feature in Arduino IDE, PlatformIO or M5Burner to gather this information. It may have useful hints. When filing a bug report, it often helps to include serial monitor output.
 * Reset the EEPROM. On models with EEPROM settings support, use "Clear Settings" from the settings menu, or hold the "Next" button (Side key on StickC models, Tab or Down Arrow on Cardputer) while powering on. 
 * TV-B-Gone's IR LED can be observed through a smart phone camera, emitting a pale purple beam of light. If it seems to be on constantly, or if it never flashes at all during TV-B-Gone operations, something is wrong. Report a bug. There's a known issue with TVBG not working after using Bluetooth spam or random wifi spam.
 * Try viewing wifi lists from several different devices if you suspect wifi spam isn't working. Sometimes, Linux network manager can see networks that smart phones cannot. Please include the results of this testing if reporting wifi spam problems.

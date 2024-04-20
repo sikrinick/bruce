@@ -80,23 +80,23 @@ bool setupSdCard() {
   return false;
 #endif
 }
-void ToggleSDCard()
-{
-  if (sdcardMounted == true) {
-    sdcardMounted = false;
-    SD.end();
-    sdcardSPI->end(); // Closes SPI connections and release pins.
-    Serial.println("SDCARD unmounted");
-  } else {
-    sdcardSPI = new SPIClass(FSPI);
-    sdcardSPI->begin(SD_CLK_PIN, SD_MISO_PIN, SD_MOSI_PIN, SD_CS_PIN);
-    delay(10);
-    if (!SD.begin(SD_CS_PIN, *sdcardSPI)) {
-      sdcardSPI->end();
-    } else {
-      Serial.println("SDCARD mounted successfully");
-      sdcardMounted = true;
-    }
-  }
-  delay(50);
+void ToggleSDCard()	
+{	
+  if (sdcardMounted == true) {	
+    sdcardMounted = false;	
+    SD.end();	
+    sdcardSPI->end(); // Closes SPI connections and release pins.	
+    Serial.println("SDCARD unmounted");	
+  } else {	
+    sdcardSPI = new SPIClass(FSPI);	
+    sdcardSPI->begin(SD_CLK_PIN, SD_MISO_PIN, SD_MOSI_PIN, SD_CS_PIN);	
+    delay(10);	
+    if (!SD.begin(SD_CS_PIN, *sdcardSPI)) {	
+      sdcardSPI->end();	
+    } else {	
+      Serial.println("SDCARD mounted successfully");	
+      sdcardMounted = true;	
+    }	
+  }	
+  delay(50);	
 }
