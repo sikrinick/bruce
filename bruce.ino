@@ -2924,11 +2924,13 @@ void rfid_loop()
       case read_mode:
         currentState = write_mode;
         displayWriteMode();
+        delay(300);
         break;
       case write_mode:
         currentState = read_mode;
         displayReadMode();
         readUID = false;
+        delay(300);
         break;
     }
   }
